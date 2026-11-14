@@ -18,6 +18,7 @@ CareerPath is an AI career companion for USC students and alumni: explore career
 - The demo is intended for judges to try both sides on separate devices. Alex and Priya have real demo login sessions and shared database-backed interactions, not simulated replies.
 - Email/password authentication was explicitly allowed in the brief. Demo credentials are deliberately public; never collect real personal data in shared demo accounts.
 - AI must run only on the backend, return validated JSON, and degrade gracefully. Never invent alumni facts or career-path statistics.
+- Resume upload accepts PDF, DOCX, and UTF-8 text in memory only; strip email addresses and phone numbers before sending extracted text to the AI provider. Never persist uploaded documents or raw resume text.
 - Paths describe sample patterns, not guaranteed or mandatory steps.
 - Never expose account emails/password hashes in public person responses. Contact stays inside the app.
 - Students: five new alumni introductions per UTC day, one first message until a reply, at most one no-reply nudge per alum.

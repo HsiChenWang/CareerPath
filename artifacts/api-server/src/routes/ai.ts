@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import rateLimit from "express-rate-limit";
 import multer from "multer";
-import pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 import { AskAiBody, AskAiResponse } from "@workspace/api-zod";
 import { requireUser } from "../middlewares/session";
@@ -21,29 +21,45 @@ const resumeUpload = multer({
 async function extractResumeText(file: Express.Multer.File): Promise<string> {
   const extension = file.originalname.split(".").pop()?.toLowerCase();
   let text = "";
-  if (extension === "pdf" && file.buffer.subarray(0, 5).toString("ascii") === "%PDF-") {
-    const parsed = await pdfParse(file.buffer, { max: 8 });
-    if (parsed.numpages > 8) throw new HttpError(400, "This resume has more than 8 pages. Please upload a shorter version.");
-    text = parsed.text;
-  } else if (
-    extension === "docx"
-    && file.buffer.length >= 4
-    && file.buffer[0] === 0x50 && file.buffer[1] === 0x4b
-    && file.buffer[2] === 0x03 && file.buffer[3] === 0x04
-  ) {
-    const extracted = await mammoth.extractRawText({ buffer: file.buffer });
-    text = extracted.value;
-  } else if (extension === "txt") {
-    try {
-      text = new TextDecoder("utf-8", { fatal: true }).decode(file.buffer);
-      if (text.includes("\u0000")) throw new Error("binary");
-    } catch {
-      throw new HttpError(400, "That text file is not valid UTF-8. Please save it as plain text and try again.");
+  try {
+    if (extension === "pdf" && file.buffer.subarray(0, 5).toString("ascii") === "%PDF-") {
+      const parser = new PDFParse({ data: file.buffer });
+      try {
+        const info = await parser.getInfo();
+        if (info.total > 8) throw new HttpError(400, "This resume has more than 8 pages. Please upload a shorter version.");
+        text = (await parser.getText({ first: 8 })).text;
+      } finally {
+        await parser.destroy();
+      }
+    } else if (
+      extension === "docx"
+      && file.buffer.length >= 4
+      && file.buffer[0] === 0x50 && file.buffer[1] === 0x4b
+      && file.buffer[2] === 0x03 && file.buffer[3] === 0x04
+    ) {
+      const extracted = await mammoth.extractRawText({ buffer: file.buffer });
+      text = extracted.value;
+    } else if (extension === "txt") {
+      try {
+        text = new TextDecoder("utf-8", { fatal: true }).decode(file.buffer);
+        if (text.includes("\u0000")) throw new Error("binary");
+      } catch {
+        throw new HttpError(400, "That text file is not valid UTF-8. Please save it as plain text and try again.");
+      }
+    } else {
+      throw new HttpError(400, "Choose a real PDF, DOCX, or plain-text resume file.");
     }
-  } else {
-    throw new HttpError(400, "Choose a real PDF, DOCX, or plain-text resume file.");
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    throw new HttpError(400, "We couldn't read that file. It may be damaged or password-protected. Try another file or paste the text instead.");
   }
-  const cleaned = text.replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").trim().slice(0, 20000);
+  const cleaned = text
+    .replace(/\u0000/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[email removed]")
+    .replace(/(?<!\w)(?:\+?\d[\d\s().-]{7,}\d)(?!\w)/g, "[phone removed]")
+    .trim()
+    .slice(0, 20000);
   if (cleaned.length < 40) throw new HttpError(400, "We couldn't find enough readable resume text. If this is a scanned PDF, paste its text into the box instead.");
   return cleaned;
 }

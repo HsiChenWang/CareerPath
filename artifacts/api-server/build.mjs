@@ -28,6 +28,9 @@ async function buildAll() {
     // - uses native modules and loads them dynamically (e.g. sharp)
     // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
     external: [
+      // pdf-parse dynamically loads its Node-only canvas/polyfills and worker;
+      // keep the package boundary so those modules resolve from its own install.
+      "pdf-parse",
       "*.node",
       "sharp",
       "better-sqlite3",
