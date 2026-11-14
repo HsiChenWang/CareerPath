@@ -1,36 +1,616 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 1.0.0
+  description: CareerPath USC career companion
 servers:
   - url: /api
-    description: Base API path
-tags:
-  - name: health
-    description: Health operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
-      tags: [health]
-      summary: Health check
-      description: Returns server health status
       responses:
-        "200":
+        '200':
           description: Healthy
           content:
             application/json:
+              schema: { $ref: '#/components/schemas/HealthStatus' }
+  /auth/me:
+    get:
+      operationId: getSession
+      responses:
+        '200':
+          description: Session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+  /auth/login:
+    post:
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginInput' }
+      responses:
+        '200':
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+  /auth/register:
+    post:
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegistrationInput' }
+      responses:
+        '200':
+          description: Registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+  /auth/demo:
+    post:
+      operationId: demoLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DemoInput' }
+      responses:
+        '200':
+          description: Demo session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+  /auth/logout:
+    post:
+      operationId: logout
+      responses:
+        '200':
+          description: Signed out
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+  /profile:
+    patch:
+      operationId: saveProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileInput' }
+      responses:
+        '200':
+          description: Saved profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Person' }
+  /people:
+    get:
+      operationId: getPeople
+      parameters:
+        - { in: query, name: kind, schema: { type: string, enum: [alumni, peers, explore] } }
+        - { in: query, name: search, schema: { type: string } }
+        - { in: query, name: school, schema: { type: string } }
+        - { in: query, name: company, schema: { type: string } }
+      responses:
+        '200':
+          description: Ranked people with specific fit explanations
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: array
+                items: { $ref: '#/components/schemas/Person' }
+  /people/{id}:
+    get:
+      operationId: getPerson
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Person
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Person' }
+  /path:
+    post:
+      operationId: findPath
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GoalInput' }
+      responses:
+        '200':
+          description: Common career path
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CareerPath' }
+  /gap:
+    get:
+      operationId: getGap
+      responses:
+        '200':
+          description: Profile compared with chosen path
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Gap' }
+  /gap/{id}:
+    patch:
+      operationId: updateGapStep
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StepInput' }
+      responses:
+        '200':
+          description: Updated gap
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Gap' }
+  /conversations:
+    get:
+      operationId: getConversations
+      responses:
+        '200':
+          description: Inbox
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Conversation' }
+    post:
+      operationId: startConversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConversationInput' }
+      responses:
+        '200':
+          description: Conversation
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Conversation' }
+  /conversations/{id}/messages:
+    get:
+      operationId: getMessages
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ChatMessage' }
+    post:
+      operationId: sendMessage
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MessageInput' }
+      responses:
+        '200':
+          description: Sent
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatMessage' }
+  /safety:
+    post:
+      operationId: safetyAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SafetyInput' }
+      responses:
+        '200':
+          description: Recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+  /chats:
+    get:
+      operationId: getChats
+      responses:
+        '200':
+          description: Coffee chat requests and meetings
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CoffeeChat' }
+    post:
+      operationId: requestChat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChatInput' }
+      responses:
+        '200':
+          description: Requested
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoffeeChat' }
+  /chats/{id}:
+    patch:
+      operationId: updateChat
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChatUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoffeeChat' }
+  /chats/{id}/calendar:
+    get:
+      operationId: downloadCalendar
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: iCalendar file
+          content:
+            text/calendar:
+              schema: { type: string }
+  /network:
+    get:
+      operationId: getNetwork
+      responses:
+        '200':
+          description: Weekly networking overview
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Network' }
+  /followups/{id}:
+    patch:
+      operationId: updateFollowup
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FollowupInput' }
+      responses:
+        '200':
+          description: Updated task
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Followup' }
+  /network/advance:
+    post:
+      operationId: advanceTime
+      responses:
+        '200':
+          description: Demo clock advanced one week
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Network' }
+  /network/milestones:
+    post:
+      operationId: recordMilestone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MilestoneInput' }
+      responses:
+        '200':
+          description: Milestone saved and relevant follow-ups drafted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Network' }
+  /ai:
+    post:
+      operationId: askAi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AiInput' }
+      responses:
+        '200':
+          description: Structured AI result; fallback explicitly indicated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AiResult' }
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
-        status:
-          type: string
-      required:
-        - status
-
+        status: { type: string }
+    Success:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+    Session:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - { $ref: '#/components/schemas/Person' }
+            - { type: 'null' }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string }
+        password: { type: string }
+    RegistrationInput:
+      type: object
+      required: [email, password, name, role]
+      properties:
+        email: { type: string }
+        password: { type: string, minLength: 8 }
+        name: { type: string }
+        role: { type: string, enum: [student, alumni] }
+    DemoInput:
+      type: object
+      required: [role]
+      properties:
+        role: { type: string, enum: [student, alumni] }
+    TimelineStep:
+      type: object
+      required: [year, title, detail, category]
+      properties:
+        year: { type: string }
+        title: { type: string }
+        detail: { type: string }
+        category: { type: string }
+    ProfileInput:
+      type: object
+      properties:
+        name: { type: string }
+        school: { type: string }
+        major: { type: string }
+        level: { type: string }
+        year: { type: string }
+        gradYear: { type: integer }
+        clubs: { type: array, items: { type: string } }
+        experience: { type: array, items: { type: string } }
+        skills: { type: array, items: { type: string } }
+        courses: { type: array, items: { type: string } }
+        interests: { type: array, items: { type: string } }
+        dreamRole: { type: string }
+        dreamCompany: { type: string }
+        currentRole: { type: string }
+        company: { type: string }
+        openToChat: { type: boolean }
+        paused: { type: boolean }
+        helpTopics: { type: array, items: { type: string } }
+        availability: { type: array, items: { type: string } }
+        maxChats: { type: integer, minimum: 0, maximum: 30 }
+        bio: { type: string }
+    Person:
+      allOf:
+        - { $ref: '#/components/schemas/ProfileInput' }
+        - type: object
+          required: [id, name, role, school, major, clubs, skills, interests, experience, courses, timeline, isDemo]
+          properties:
+            id: { type: string }
+            name: { type: string }
+            role: { type: string }
+            school: { type: string }
+            major: { type: string }
+            clubs: { type: array, items: { type: string } }
+            skills: { type: array, items: { type: string } }
+            interests: { type: array, items: { type: string } }
+            experience: { type: array, items: { type: string } }
+            courses: { type: array, items: { type: string } }
+            timeline: { type: array, items: { $ref: '#/components/schemas/TimelineStep' } }
+            isDemo: { type: boolean }
+            fitReason: { type: string }
+            fitScore: { type: number }
+            outcome: { type: string }
+            photo: { type: string }
+    GoalInput:
+      type: object
+      required: [role]
+      properties:
+        role: { type: string, minLength: 1 }
+        company: { type: string }
+    PathStep:
+      type: object
+      required: [id, stage, title, description, count, total, category, keywords]
+      properties:
+        id: { type: string }
+        stage: { type: string }
+        title: { type: string }
+        description: { type: string }
+        count: { type: integer }
+        total: { type: integer }
+        category: { type: string }
+        keywords: { type: array, items: { type: string } }
+    CareerPath:
+      type: object
+      required: [role, company, summary, total, steps, alumni, fallback]
+      properties:
+        role: { type: string }
+        company: { type: string }
+        summary: { type: string }
+        total: { type: integer }
+        steps: { type: array, items: { $ref: '#/components/schemas/PathStep' } }
+        alumni: { type: array, items: { $ref: '#/components/schemas/Person' } }
+        fallback: { type: boolean }
+    GapStep:
+      allOf:
+        - { $ref: '#/components/schemas/PathStep' }
+        - type: object
+          required: [done]
+          properties:
+            done: { type: boolean }
+    Gap:
+      type: object
+      required: [role, company, completed, total, steps, actions]
+      properties:
+        role: { type: string }
+        company: { type: string }
+        completed: { type: integer }
+        total: { type: integer }
+        steps: { type: array, items: { $ref: '#/components/schemas/GapStep' } }
+        actions: { type: array, items: { type: string } }
+    StepInput:
+      type: object
+      required: [done]
+      properties:
+        done: { type: boolean }
+    MilestoneInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 200 }
+    Conversation:
+      type: object
+      required: [id, person, lastMessage, updatedAt, canSend, hasReply, blocked]
+      properties:
+        id: { type: string }
+        person: { $ref: '#/components/schemas/Person' }
+        lastMessage: { type: string }
+        updatedAt: { type: string }
+        canSend: { type: boolean }
+        hasReply: { type: boolean }
+        blocked: { type: boolean }
+    ConversationInput:
+      type: object
+      required: [personId]
+      properties:
+        personId: { type: string }
+    ChatMessage:
+      type: object
+      required: [id, conversationId, senderId, text, createdAt]
+      properties:
+        id: { type: string }
+        conversationId: { type: string }
+        senderId: { type: string }
+        text: { type: string }
+        createdAt: { type: string }
+    MessageInput:
+      type: object
+      required: [text]
+      properties:
+        text: { type: string, minLength: 1, maxLength: 5000 }
+    SafetyInput:
+      type: object
+      required: [personId, action]
+      properties:
+        personId: { type: string }
+        action: { type: string, enum: [report, block, unblock] }
+        reason: { type: string }
+    ChatInput:
+      type: object
+      required: [alumniId, duration, format, times, note]
+      properties:
+        alumniId: { type: string }
+        duration: { type: integer, enum: [15, 30] }
+        format: { type: string, enum: [virtual, campus] }
+        times: { type: array, minItems: 1, maxItems: 3, items: { type: string } }
+        note: { type: string }
+    ChatUpdate:
+      type: object
+      properties:
+        action: { type: string, enum: [accept, suggest, decline, notes] }
+        scheduledAt: { type: string }
+        note: { type: string }
+        notes: { type: string }
+    CoffeeChat:
+      type: object
+      required: [id, studentId, alumniId, person, duration, format, times, note, status, scheduledAt, notes, summary, actionItems, createdAt]
+      properties:
+        id: { type: string }
+        studentId: { type: string }
+        alumniId: { type: string }
+        person: { $ref: '#/components/schemas/Person' }
+        duration: { type: integer }
+        format: { type: string }
+        times: { type: array, items: { type: string } }
+        note: { type: string }
+        status: { type: string }
+        scheduledAt: { type: string }
+        notes: { type: string }
+        summary: { type: string }
+        actionItems: { type: array, items: { type: string } }
+        createdAt: { type: string }
+    Followup:
+      type: object
+      required: [id, person, kind, reason, draft, dueAt, status]
+      properties:
+        id: { type: string }
+        person: { $ref: '#/components/schemas/Person' }
+        kind: { type: string }
+        reason: { type: string }
+        draft: { type: string }
+        dueAt: { type: string }
+        status: { type: string }
+    FollowupInput:
+      type: object
+      required: [action]
+      properties:
+        action: { type: string, enum: [send, edit, snooze, skip] }
+        draft: { type: string }
+    Connection:
+      type: object
+      required: [person, status, lastContact]
+      properties:
+        person: { $ref: '#/components/schemas/Person' }
+        status: { type: string }
+        lastContact: { type: string }
+    Network:
+      type: object
+      required: [summary, connections, chats, followups, waiting, relationships, now, offsetDays]
+      properties:
+        summary: { type: string }
+        connections: { type: array, items: { $ref: '#/components/schemas/Connection' } }
+        chats: { type: array, items: { $ref: '#/components/schemas/CoffeeChat' } }
+        followups: { type: array, items: { $ref: '#/components/schemas/Followup' } }
+        waiting: { type: integer }
+        relationships: { type: integer }
+        now: { type: string }
+        offsetDays: { type: integer }
+    AiInput:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string, enum: [coach, resume, tips, draft, reply, prep, notes, decline, weekly, followup] }
+        prompt: { type: string }
+        personId: { type: string }
+        conversationId: { type: string }
+        chatId: { type: string }
+        goal: { type: string }
+        tone: { type: string }
+        text: { type: string }
+        page: { type: string }
+    AiResult:
+      type: object
+      required: [text, suggestions, questions, actions, fallback]
+      properties:
+        text: { type: string }
+        suggestions: { type: array, items: { type: string } }
+        questions: { type: array, items: { type: string } }
+        actions: { type: array, items: { type: string } }
+        avoid: { type: string }
+        profile: { $ref: '#/components/schemas/ProfileInput' }
+        fallback: { type: boolean }

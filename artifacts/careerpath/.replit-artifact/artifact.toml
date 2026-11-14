@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "CareerPath"
+description = "An AI career companion for USC students and alumni to explore Trojan career paths, close skill gaps, and turn introductions into relationships."
+version = "1.0.0"
+id = "artifacts/careerpath"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18179
+
+[services.development]
+run = "pnpm --filter @workspace/careerpath run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/careerpath", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/careerpath/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18179"
+BASE_PATH = "/"
