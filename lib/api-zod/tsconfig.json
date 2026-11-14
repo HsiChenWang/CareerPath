@@ -5,6 +5,7 @@
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "outDir": "dist",
+    "lib": ["dom", "dom.iterable", "es2022"],
     "rootDir": "src"
   },
   "include": ["src"]

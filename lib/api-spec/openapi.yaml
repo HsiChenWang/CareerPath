@@ -334,6 +334,20 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AiResult' }
+  /ai/resume-upload:
+    post:
+      operationId: uploadResume
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/ResumeFileInput' }
+      responses:
+        '200':
+          description: Resume fields extracted as structured JSON
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AiResult' }
 components:
   schemas:
     HealthStatus:
@@ -614,3 +628,10 @@ components:
         avoid: { type: string }
         profile: { $ref: '#/components/schemas/ProfileInput' }
         fallback: { type: boolean }
+    ResumeFileInput:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary

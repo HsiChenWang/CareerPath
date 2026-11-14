@@ -1,5 +1,8 @@
 import { Router, type IRouter } from "express";
 import rateLimit from "express-rate-limit";
+import multer from "multer";
+import pdfParse from "pdf-parse";
+import mammoth from "mammoth";
 import { AskAiBody, AskAiResponse } from "@workspace/api-zod";
 import { requireUser } from "../middlewares/session";
 import { assertContact, conversationMessages, ensureConversation, HttpError, ownConversation, personRow, publicPerson } from "../lib/domain";
@@ -9,6 +12,64 @@ import { ownChat, networkFor } from "../lib/network";
 
 const router: IRouter = Router();
 const aiLimit = rateLimit({ windowMs: 15 * 60000, limit: 60, standardHeaders: "draft-7", legacyHeaders: false, message: { error: "You've made a lot of AI requests. Please take a short break and try again." } });
+const resumeLimit = rateLimit({ windowMs: 60 * 60000, limit: 8, standardHeaders: "draft-7", legacyHeaders: false, message: { error: "You've reached the resume upload limit for now. Please try again later." } });
+const resumeUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 4 * 1024 * 1024, files: 1, fields: 0, parts: 1 },
+}).single("file");
+
+async function extractResumeText(file: Express.Multer.File): Promise<string> {
+  const extension = file.originalname.split(".").pop()?.toLowerCase();
+  let text = "";
+  if (extension === "pdf" && file.buffer.subarray(0, 5).toString("ascii") === "%PDF-") {
+    const parsed = await pdfParse(file.buffer, { max: 8 });
+    if (parsed.numpages > 8) throw new HttpError(400, "This resume has more than 8 pages. Please upload a shorter version.");
+    text = parsed.text;
+  } else if (
+    extension === "docx"
+    && file.buffer.length >= 4
+    && file.buffer[0] === 0x50 && file.buffer[1] === 0x4b
+    && file.buffer[2] === 0x03 && file.buffer[3] === 0x04
+  ) {
+    const extracted = await mammoth.extractRawText({ buffer: file.buffer });
+    text = extracted.value;
+  } else if (extension === "txt") {
+    try {
+      text = new TextDecoder("utf-8", { fatal: true }).decode(file.buffer);
+      if (text.includes("\u0000")) throw new Error("binary");
+    } catch {
+      throw new HttpError(400, "That text file is not valid UTF-8. Please save it as plain text and try again.");
+    }
+  } else {
+    throw new HttpError(400, "Choose a real PDF, DOCX, or plain-text resume file.");
+  }
+  const cleaned = text.replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").trim().slice(0, 20000);
+  if (cleaned.length < 40) throw new HttpError(400, "We couldn't find enough readable resume text. If this is a scanned PDF, paste its text into the box instead.");
+  return cleaned;
+}
+
+router.post("/ai/resume-upload", requireUser, resumeLimit, (req, res, next) => {
+  resumeUpload(req, res, error => {
+    if (error instanceof multer.MulterError) {
+      const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+      next(new HttpError(status, error.code === "LIMIT_FILE_SIZE" ? "Your resume must be 4 MB or smaller." : "Upload one resume file at a time."));
+      return;
+    }
+    if (error) { next(error); return; }
+    next();
+  });
+}, async (req, res) => {
+  if (!req.file) throw new HttpError(400, "Choose a resume file to upload.");
+  const text = await extractResumeText(req.file);
+  const user = req.cpUser!;
+  const fallback = "Resume autofill is temporarily unavailable. Your resume wasn't saved; please fill the fields manually or try again.";
+  const result = await careerAi("resume", {
+    user: publicPerson(user),
+    text,
+    page: "Profile resume upload",
+  }, fallback);
+  res.json(AskAiResponse.parse(result));
+});
 router.post("/ai", requireUser, aiLimit, async (req, res) => {
   const body = AskAiBody.parse(req.body);
   const user = req.cpUser!;

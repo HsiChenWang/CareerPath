@@ -343,6 +343,10 @@ export interface AiResult {
   fallback: boolean;
 }
 
+export interface ResumeFileInput {
+  file: Blob | File;
+}
+
 export type GetPeopleParams = {
 kind?: GetPeopleKind;
 search?: string;

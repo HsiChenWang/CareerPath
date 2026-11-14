@@ -1655,3 +1655,45 @@ export const AskAiResponse = zod.object({
 })
 
 
+export const UploadResumeBody = zod.object({
+  "file": zod.instanceof(Blob)
+})
+
+export const uploadResumeResponseProfileMaxChatsMin = 0;
+export const uploadResumeResponseProfileMaxChatsMax = 30;
+
+
+
+export const UploadResumeResponse = zod.object({
+  "text": zod.string(),
+  "suggestions": zod.array(zod.string()),
+  "questions": zod.array(zod.string()),
+  "actions": zod.array(zod.string()),
+  "avoid": zod.string().optional(),
+  "profile": zod.object({
+  "name": zod.string().optional(),
+  "school": zod.string().optional(),
+  "major": zod.string().optional(),
+  "level": zod.string().optional(),
+  "year": zod.string().optional(),
+  "gradYear": zod.number().int().optional(),
+  "clubs": zod.array(zod.string()).optional(),
+  "experience": zod.array(zod.string()).optional(),
+  "skills": zod.array(zod.string()).optional(),
+  "courses": zod.array(zod.string()).optional(),
+  "interests": zod.array(zod.string()).optional(),
+  "dreamRole": zod.string().optional(),
+  "dreamCompany": zod.string().optional(),
+  "currentRole": zod.string().optional(),
+  "company": zod.string().optional(),
+  "openToChat": zod.boolean().optional(),
+  "paused": zod.boolean().optional(),
+  "helpTopics": zod.array(zod.string()).optional(),
+  "availability": zod.array(zod.string()).optional(),
+  "maxChats": zod.number().int().min(uploadResumeResponseProfileMaxChatsMin).max(uploadResumeResponseProfileMaxChatsMax).optional(),
+  "bio": zod.string().optional()
+}).optional(),
+  "fallback": zod.boolean()
+})
+
+

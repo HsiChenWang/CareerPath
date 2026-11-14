@@ -40,6 +40,7 @@ export * from './person';
 export * from './profileInput';
 export * from './registrationInput';
 export * from './registrationInputRole';
+export * from './resumeFileInput';
 export * from './safetyInput';
 export * from './safetyInputAction';
 export * from './session';

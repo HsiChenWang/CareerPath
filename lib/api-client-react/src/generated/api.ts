@@ -48,6 +48,7 @@ import type {
   Person,
   ProfileInput,
   RegistrationInput,
+  ResumeFileInput,
   SafetyInput,
   Session,
   StepInput,
@@ -2324,5 +2325,75 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getAskAiMutationOptions(options), queryClient);
+    }
+
+export const getUploadResumeUrl = () => {
+
+
+
+
+  return `/api/ai/resume-upload`
+}
+
+export const uploadResume = async (resumeFileInput: ResumeFileInput, options?: Parameters<typeof customFetch>[1]): Promise<AiResult> => {
+    const formData = new FormData();
+formData.append(`file`, resumeFileInput.file);
+
+  return customFetch<AiResult>(getUploadResumeUrl(),
+  {
+    ...options,
+    method: 'POST'
+    ,
+    body: formData
+  }
+);}
+
+
+
+
+
+export const getUploadResumeMutationKey = () => ['uploadResume'] as const;
+
+export const getUploadResumeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadResume>>, TError,UploadResumeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof uploadResume>>, TError,UploadResumeMutationVariables, TContext> => {
+
+const mutationKey = getUploadResumeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadResume>>, UploadResumeMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  uploadResume(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UploadResumeMutationResult = NonNullable<Awaited<ReturnType<typeof uploadResume>>>
+    export type UploadResumeMutationBody = BodyType<ResumeFileInput>
+    export type UploadResumeMutationError = ErrorType<unknown>
+    export type UploadResumeMutationVariables = {data: BodyType<ResumeFileInput>}
+
+    export const useUploadResume = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadResume>>, TError,UploadResumeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof uploadResume>>,
+        TError,
+        UploadResumeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUploadResumeMutationOptions(options), queryClient);
     }
 

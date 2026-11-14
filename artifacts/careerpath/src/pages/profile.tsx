@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText, Sparkles, Wand2 } from "lucide-react";
-import { useAskAi, useSaveProfile, getGetSessionQueryKey, getGetGapQueryKey, getGetPeopleQueryKey } from "@workspace/api-client-react";
-import type { ProfileInput, Session } from "@workspace/api-client-react";
+import { FileText, Sparkles, UploadCloud, Wand2, X } from "lucide-react";
+import { useAskAi, useSaveProfile, useUploadResume, getGetSessionQueryKey, getGetGapQueryKey, getGetPeopleQueryKey } from "@workspace/api-client-react";
+import type { AiResult, ProfileInput, Session } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
 import { AiThinking, PageHeader, TagInput } from "@/components/bits";
 import { Input } from "@/components/ui/input";
@@ -41,10 +41,13 @@ export default function Profile() {
   const [form, setForm] = useState<ProfileInput>({});
   const [filled, setFilled] = useState<Set<string>>(new Set());
   const [resume, setResume] = useState("");
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [knows, setKnows] = useState<"yes" | "no" | "">("");
   const init = useRef<string | null>(null);
+  const resumeFileInput = useRef<HTMLInputElement>(null);
   const save = useSaveProfile();
   const resumeAi = useAskAi();
+  const resumeUploadAi = useUploadResume();
   const tips = useAskAi();
   const alum = user?.role === "alumni";
 
@@ -64,25 +67,53 @@ export default function Profile() {
   const set = <K extends keyof ProfileInput>(k: K, v: ProfileInput[K]) => setForm((f) => ({ ...f, [k]: v }));
   const list = (k: (typeof LIST_KEYS)[number]) => (form[k] as string[] | undefined) ?? [];
 
+  const applyResumeProfile = (r: AiResult) => {
+    if (!r.profile) { toast({ title: "Nothing to extract", description: "Try another resume or paste its text instead." }); return; }
+    const got = new Set<string>();
+    setForm((f) => {
+      const next = { ...f } as Record<string, unknown>;
+      for (const [k, v] of Object.entries(r.profile ?? {})) {
+        if (v === undefined || v === null || v === "" || (Array.isArray(v) && !v.length)) continue;
+        if (Array.isArray(v) && Array.isArray(next[k])) next[k] = Array.from(new Set([...(next[k] as string[]), ...v]));
+        else next[k] = v;
+        got.add(k);
+      }
+      return next as ProfileInput;
+    });
+    setFilled(got);
+    toast({ title: `Filled ${got.size} fields`, description: "Highlighted in gold. Review before saving." });
+  };
+
   const autofill = () => resumeAi.mutate({ data: { kind: "resume", text: resume } }, {
-    onSuccess: (r) => {
-      if (!r.profile) { toast({ title: "Nothing to extract", description: "Try pasting more of your resume." }); return; }
-      const got = new Set<string>();
-      setForm((f) => {
-        const next = { ...f } as Record<string, unknown>;
-        for (const [k, v] of Object.entries(r.profile ?? {})) {
-          if (v === undefined || v === null || v === "" || (Array.isArray(v) && !v.length)) continue;
-          if (Array.isArray(v) && Array.isArray(next[k])) next[k] = Array.from(new Set([...(next[k] as string[]), ...v]));
-          else next[k] = v;
-          got.add(k);
-        }
-        return next as ProfileInput;
-      });
-      setFilled(got);
-      toast({ title: `Filled ${got.size} fields`, description: "Highlighted in gold. Review before saving." });
-    },
+    onSuccess: applyResumeProfile,
     onError: (e) => toast({ title: "Resume reader is resting", description: errMsg(e), variant: "destructive" }),
   });
+
+  const chooseResume = (file?: File) => {
+    if (!file) return;
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    if (!["pdf", "docx", "txt"].includes(extension ?? "")) {
+      toast({ title: "Choose a supported file", description: "Upload a PDF, DOCX, or plain-text resume.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      toast({ title: "File is too large", description: "Your resume must be 4 MB or smaller.", variant: "destructive" });
+      return;
+    }
+    setResumeFile(file);
+  };
+
+  const uploadResume = () => {
+    if (!resumeFile) return;
+    resumeUploadAi.mutate({ data: { file: resumeFile } }, {
+      onSuccess: (r) => {
+        applyResumeProfile(r);
+        setResumeFile(null);
+        if (resumeFileInput.current) resumeFileInput.current.value = "";
+      },
+      onError: (e) => toast({ title: "Could not read that resume", description: errMsg(e), variant: "destructive" }),
+    });
+  };
 
   const submit = (next?: string) => {
     const data: ProfileInput = {};
@@ -121,11 +152,50 @@ export default function Profile() {
           <section className="rise relative overflow-hidden rounded-[1.75rem] bg-ink p-6 text-paper md:p-8">
             <FileText className="absolute -right-6 -top-6 h-36 w-36 text-white/5" />
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold">Shortcut</p>
-            <h2 className="mt-1 font-display text-2xl">Paste your resume. We will do the typing.</h2>
-            <Textarea value={resume} onChange={(e) => setResume(e.target.value)} rows={6} placeholder="Paste the text of your resume here..." className="mt-4 rounded-2xl border-white/15 bg-white/5 text-paper placeholder:text-paper/40" data-testid="input-resume" />
-            {resumeAi.isPending ? <AiThinking label="Reading your resume..." className="mt-3" /> : (
-              <button onClick={autofill} disabled={resume.trim().length < 30} className="mt-3 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-40" data-testid="button-autofill"><Wand2 className="h-4 w-4" />Autofill my profile</button>
-            )}
+            <h2 className="mt-1 font-display text-2xl">Upload your resume. We will do the typing.</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-paper/70">Choose a PDF, DOCX, or plain-text file up to 4 MB. We extract your details for you to review; CareerPath does not save the uploaded file.</p>
+            <input
+              ref={resumeFileInput}
+              type="file"
+              accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+              className="sr-only"
+              aria-label="Choose a PDF, DOCX, or plain-text resume"
+              data-testid="input-resume-file"
+              onChange={(e) => chooseResume(e.currentTarget.files?.[0])}
+            />
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => { e.preventDefault(); chooseResume(e.dataTransfer.files?.[0]); }}
+              className="mt-5 rounded-2xl border border-dashed border-gold/50 bg-white/[0.04] p-5 sm:p-6"
+              data-testid="dropzone-resume"
+            >
+              {resumeFile ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-gold text-ink"><FileText className="h-5 w-5" /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="break-all text-sm font-semibold text-paper" data-testid="text-resume-filename">{resumeFile.name}</p>
+                    <p className="mt-0.5 text-xs text-paper/60">{(resumeFile.size / 1024).toFixed(0)} KB · Ready to extract</p>
+                  </div>
+                  <button type="button" disabled={resumeUploadAi.isPending} onClick={() => { setResumeFile(null); if (resumeFileInput.current) resumeFileInput.current.value = ""; }} className="rounded-full p-2 text-paper/70 hover:bg-white/10 hover:text-paper disabled:opacity-40" aria-label="Remove selected resume" data-testid="button-remove-resume"><X className="h-4 w-4" /></button>
+                  <button type="button" onClick={uploadResume} disabled={resumeUploadAi.isPending} className="inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-50" data-testid="button-upload-resume"><UploadCloud className="h-4 w-4" />Extract profile details</button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center text-center">
+                  <span className="grid h-11 w-11 place-items-center rounded-full bg-gold text-ink"><UploadCloud className="h-5 w-5" /></span>
+                  <p className="mt-3 text-sm font-semibold text-paper">Drag your resume here</p>
+                  <p className="mt-1 text-xs text-paper/60">PDF, DOCX, or TXT · Up to 4 MB</p>
+                  <button type="button" onClick={() => resumeFileInput.current?.click()} className="mt-4 rounded-full border border-gold/50 px-4 py-2 text-sm font-semibold text-gold transition-colors hover:bg-gold hover:text-ink" data-testid="button-choose-resume">Choose a file</button>
+                </div>
+              )}
+            </div>
+            {resumeUploadAi.isPending && <AiThinking label="Reading your resume and finding profile details..." className="mt-3" />}
+            <details className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <summary className="cursor-pointer text-sm font-medium text-paper/80">Prefer to paste your resume text?</summary>
+              <Textarea value={resume} onChange={(e) => setResume(e.target.value)} rows={5} placeholder="Paste the text of your resume here..." className="mt-4 rounded-2xl border-white/15 bg-white/5 text-paper placeholder:text-paper/40" data-testid="input-resume" />
+              {resumeAi.isPending ? <AiThinking label="Reading your resume..." className="mt-3" /> : (
+                <button onClick={autofill} disabled={resume.trim().length < 30 || resumeUploadAi.isPending} className="mt-3 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-40" data-testid="button-autofill"><Wand2 className="h-4 w-4" />Autofill from pasted text</button>
+              )}
+            </details>
           </section>
 
           <Card eyebrow="Basics" title="Who you are">

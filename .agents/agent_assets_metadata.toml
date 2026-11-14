@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "gA9PPwFenOBDCjVr4m2LG"
+uri = "file://generated-artifacts/CareerPath-source.zip"
+type = "unspecified"
+title = "CareerPath — complete source code"
+description = "GitHub-ready ZIP containing 269 source, configuration, documentation, and asset files. Secrets, installed dependencies, build outputs, and live database records are excluded."
+logical_id = "d322cd16-3580-465a-aece-a229e2714b38"
+content_hash = "sha256:4e29bc70ccca59e413c11fab2273f758c39776d519e148499a55fbb65c363314"
+size = 568287
+mtime_ms = 1794698680242
+storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:87eb14e5-574c-41b2-b557-7af30a26685d/d322cd16-3580-465a-aece-a229e2714b38/550a9bc9-7217-4f8c-8288-1b7041755afb"
+storage_version_token = "1794698690883613"
+content_type = "application/octet-stream"
