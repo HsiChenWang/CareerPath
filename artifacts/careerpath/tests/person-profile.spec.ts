@@ -87,7 +87,7 @@ test("shows profile actions, shared details, and a readable career timeline", as
   await expect(page.getByTestId("link-contact-email")).toContainText("priya@example.com");
   await expect(page.getByTestId("link-contact-phone")).toHaveAttribute("href", "tel:+12135550123");
   await expect(page.getByTestId("link-contact-phone")).toContainText("+1 (213) 555-0123");
-  await expect(page.getByTestId("text-sample-contact-info")).toHaveText("Sample contact info");
+  await expect(page.getByTestId("text-sample-contact-info")).toHaveText("Contact info");
   await expect(page.getByRole("heading", { name: "Conversation starters" })).toBeVisible();
   await expect(page.getByTestId("text-person-fit")).toContainText("HackSC");
   await expect(page.getByRole("button", { name: /Draft message/ })).toBeVisible();
