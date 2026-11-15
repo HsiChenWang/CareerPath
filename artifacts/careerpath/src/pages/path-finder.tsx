@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { alumniRateLabel, errMsg, isOptionalTask, percentOfRelatedAlumni, useMe, PATH_KEY } from "@/lib/cp";
 
-const PATH_CACHE_VERSION = 3;
+const PATH_CACHE_VERSION = 4;
 function loadStored(): CareerPath | null {
   try {
     const raw = sessionStorage.getItem(PATH_KEY);
@@ -33,8 +33,10 @@ export default function PathFinder() {
   const params = new URLSearchParams(search);
   const requestedRole = params.get("role");
   const requestedCompany = params.get("company") || "";
+  const requestedIndustry = params.get("industry") || "";
   const [role, setRole] = useState(params.get("role") || user?.dreamRole || "");
   const [company, setCompany] = useState(params.get("company") || user?.dreamCompany || "");
+  const [industry, setIndustry] = useState(params.get("industry") || user?.dreamIndustry || "");
   const [path, setPath] = useState<CareerPath | null>(() => (params.get("role") ? null : loadStored()));
   const find = useFindPath();
   const gapQuery = useGetGap({ query: { enabled: !!path, queryKey: getGetGapQueryKey(), refetchOnMount: "always" } });
@@ -44,9 +46,9 @@ export default function PathFinder() {
   findRef.current = find.mutate;
   const ran = useRef(false);
 
-  const run = (r: string, c: string) => {
+  const run = (r: string, c: string, i: string) => {
     if (!r.trim()) return;
-    findRef.current({ data: { role: r.trim(), company: c.trim() || undefined } }, {
+    findRef.current({ data: { role: r.trim(), company: c.trim() || undefined, industry: i.trim() || undefined } }, {
       onSuccess: (p) => {
         setPath(p);
         sessionStorage.setItem(PATH_KEY, JSON.stringify({ version: PATH_CACHE_VERSION, path: p }));
@@ -61,17 +63,17 @@ export default function PathFinder() {
     const initialRole = requestedRole || (!path ? user?.dreamRole : undefined);
     if (initialRole) {
       ran.current = true;
-      run(initialRole, requestedRole ? requestedCompany : user?.dreamCompany || "");
+      run(initialRole, requestedRole ? requestedCompany : user?.dreamCompany || "", requestedRole ? requestedIndustry : user?.dreamIndustry || "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requestedRole, requestedCompany, path, user?.dreamRole, user?.dreamCompany]);
+  }, [requestedRole, requestedCompany, requestedIndustry, path, user?.dreamRole, user?.dreamCompany, user?.dreamIndustry]);
 
   useEffect(() => {
-    setFocus({ goal: path ? `${path.role}${path.company ? ` at ${path.company}` : ""}` : undefined, label: path ? `the path to ${path.role}` : undefined });
+    setFocus({ goal: path ? `${path.role}${path.company ? ` at ${path.company}` : ""}${path.industry ? ` in ${path.industry}` : ""}` : undefined, label: path ? `the path to ${path.role}` : undefined });
     return () => setFocus({});
   }, [path, setFocus]);
 
-  const submit = (e: FormEvent) => { e.preventDefault(); run(role, company); };
+  const submit = (e: FormEvent) => { e.preventDefault(); run(role, company, industry); };
   const toggleStep = (id: string, done: boolean) => updateStep.mutate({ id, data: { done } }, {
     onSuccess: (gap) => {
       qc.setQueryData(getGetGapQueryKey(), gap);
@@ -86,17 +88,19 @@ export default function PathFinder() {
     <Page>
       <PageHeader eyebrow="Path Finder" title={<>Where do you <span className="text-cardinal">want to end up?</span></>} sub="Name a dream role. We read the year-by-year timelines of Trojans who got there and find the common path." />
 
-      <form onSubmit={submit} className="rise mb-12 flex flex-col gap-3 rounded-[1.75rem] border bg-card p-3 shadow-sm md:flex-row md:items-center">
+      <form onSubmit={submit} className="rise mb-12 flex flex-col gap-3 rounded-[1.75rem] border bg-card p-3 shadow-sm lg:flex-row lg:items-center">
         <div className="flex flex-1 items-center gap-3 px-3"><Search className="h-5 w-5 text-cardinal" /><Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Dream role, e.g. Product Manager" className="h-12 border-0 bg-transparent text-lg shadow-none focus-visible:ring-0" data-testid="input-dream-role" /></div>
-        <div className="hidden h-8 w-px bg-border md:block" />
-        <Input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Company (optional)" className="h-12 border-0 bg-muted/50 px-4 text-lg shadow-none focus-visible:ring-0 md:w-56 md:bg-transparent" data-testid="input-dream-company" />
+        <div className="hidden h-8 w-px bg-border lg:block" />
+        <Input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Company (optional)" className="h-12 border-0 bg-muted/50 px-4 text-base shadow-none focus-visible:ring-0 lg:w-48 lg:bg-transparent" data-testid="input-dream-company" />
+        <div className="hidden h-8 w-px bg-border lg:block" />
+        <Input value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="Industry (optional)" className="h-12 border-0 bg-muted/50 px-4 text-base shadow-none focus-visible:ring-0 lg:w-48 lg:bg-transparent" data-testid="input-dream-industry" />
         <button disabled={!role.trim() || find.isPending} className="h-12 rounded-2xl bg-cardinal px-7 font-semibold text-white transition-transform active:scale-95 disabled:opacity-50" data-testid="button-find-path">{find.isPending ? "Mapping..." : "Map the path"}</button>
       </form>
 
       {find.isPending ? (
         <div className="space-y-4"><AiThinking label="Mapping the path across alumni timelines..." className="max-w-md" />{[0, 1, 2, 3].map((i) => <div key={i} className="h-24 animate-pulse rounded-3xl bg-muted" />)}</div>
       ) : find.isError && !path ? (
-        <ErrorBlock message={errMsg(find.error)} onRetry={() => run(role, company)} />
+        <ErrorBlock message={errMsg(find.error)} onRetry={() => run(role, company, industry)} />
       ) : !path ? (
         <EmptyBlock icon={<Map className="h-6 w-6" />} title="No path mapped yet" body="Try Product Manager at Google, Investment Banking Analyst at Goldman Sachs, or Software Engineer at Apple. Not sure? Explore first." action={<Link href="/explore" className="rounded-full border border-cardinal px-5 py-2.5 text-sm font-semibold text-cardinal" data-testid="link-go-explore">Explore careers</Link>} />
       ) : (
@@ -105,6 +109,7 @@ export default function PathFinder() {
             <div className="rise rounded-[1.75rem] bg-cardinal p-7 text-white md:p-9">
               <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold" data-testid="text-based-on">Based on {path.total} related alumni</p>
               <h2 className="mt-2 font-display text-3xl md:text-4xl" data-testid="text-path-title">{path.role}{path.company ? ` at ${path.company}` : ""}</h2>
+              {path.industry && <p className="mt-1 text-sm text-white/75" data-testid="text-path-industry">Industry: {path.industry}</p>}
               <div className="mt-4 rounded-2xl border border-white/15 bg-white/5 p-4" data-testid="text-path-summary">
                 <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-gold">Quick read</p>
                 {path.steps.length ? (

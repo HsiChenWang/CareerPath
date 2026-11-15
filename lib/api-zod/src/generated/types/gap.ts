@@ -10,6 +10,7 @@ import type { GapStep } from './gapStep';
 export interface Gap {
   role: string;
   company: string;
+  industry?: string;
   completed: number;
   total: number;
   steps: GapStep[];

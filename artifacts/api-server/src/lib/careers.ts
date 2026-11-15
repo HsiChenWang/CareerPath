@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const matchCache = new Map<string, { at: number; people: Person[] }>();
 const words = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-export const ROADMAP_VERSION = 3;
+export const ROADMAP_VERSION = 4;
 
 function roleMatches(actual: string, goal: string) {
   if (!words(actual) || !words(goal)) return false;
@@ -112,7 +112,7 @@ function commonSteps(alumni: Person[], role: string): PathStep[] {
 export function gapFor(user: PersonRow): Gap {
   const p = publicPerson(user);
   const path = user.path ? FindPathResponse.parse(user.path) : null;
-  if (!path) return { role: p.dreamRole || "", company: p.dreamCompany || "", completed: 0, total: 0, steps: [], actions: [] };
+  if (!path) return { role: p.dreamRole || "", company: p.dreamCompany || "", industry: p.dreamIndustry || "", completed: 0, total: 0, steps: [], actions: [] };
   const steps = path.steps.map(step => {
     const rate = step.total > 0 ? Math.round((step.count / step.total) * 100) : 0;
     const description = step.description.replace(/\b\d+\s+of\s+\d+(?:\s+matched alumni)?/i, `${rate}% of related alumni`);
@@ -143,11 +143,11 @@ export function gapFor(user: PersonRow): Gap {
   const actions = Array.isArray(storedActions) ? storedActions.filter((x): x is string => typeof x === "string").slice(0, 3) : [];
   const requiredSteps = steps.filter(x => x.category !== "case-competition" && x.category !== "certificate");
   return {
-    role: path.role, company: path.company, completed: requiredSteps.filter(x => x.done).length, total: requiredSteps.length, steps,
+    role: path.role, company: path.company, industry: path.industry, completed: requiredSteps.filter(x => x.done).length, total: requiredSteps.length, steps,
     actions: actions.length ? actions : steps.filter(x => !x.done).slice(0, 3).map(x => `This semester: ${x.title.toLowerCase()}. Start with one small action this week.`),
   };
 }
-export async function makePath(user: PersonRow, role: string, company = "") {
+export async function makePath(user: PersonRow, role: string, company = "", industry = "") {
   const all = await db.select().from(peopleTable).where(eq(peopleTable.role, "alumni"));
   const family = careerFamily(role);
   const related = all.map(publicPerson).filter(p => {
@@ -159,29 +159,37 @@ export async function makePath(user: PersonRow, role: string, company = "") {
     words(p.company || "").includes(words(company))
     || p.timeline.some(t => words(t.title).includes(words(company)))
   );
+  const industryMatch = (p: Person) => !!industry && words([
+    p.currentRole || "", p.company || "", p.outcome || "", p.bio || "",
+    ...p.interests, ...p.skills, ...p.experience,
+    ...p.timeline.flatMap(t => [t.title, t.detail || ""]),
+  ].join(" ")).includes(words(industry));
   const exactMatch = (p: Person) => roleMatches(p.currentRole || "", role) || p.timeline.some(t => roleMatches(t.title, role));
   const companyMatches = related.filter(companyMatch).length;
+  const industryMatches = related.filter(industryMatch).length;
   const alumni = related.sort((a, b) =>
     Number(companyMatch(b)) - Number(companyMatch(a))
+    || Number(industryMatch(b)) - Number(industryMatch(a))
     || Number(exactMatch(b)) - Number(exactMatch(a))
     || a.name.localeCompare(b.name),
   );
   const steps = commonSteps(alumni, role);
-  const cohortDescription = family ? `the related ${family} career family` : `roles related to ${role}`;
+  const cohortDescription = `${family ? `the related ${family} career family` : `roles related to ${role}`}${industry ? ` in ${industry}` : ""}`;
   const baseline: CareerPath = {
-    role, company, total: alumni.length, alumni, steps, fallback: true,
+    role, company, industry, total: alumni.length, alumni, steps, fallback: true,
     summary: alumni.length ? `Across ${alumni.length} sample Trojans in ${cohortDescription}, common themes include community, coursework, hands-on work, and relevant experience. The steps are descriptive, not mandatory or guaranteed.` : `No sample alumni match ${role}${company ? ` at ${company}` : ""} yet. Try a broader role or one of our sample paths: Product Manager at Google, Investment Banking Analyst at Goldman Sachs, Consultant at McKinsey, Software Engineer at Apple, or Marketing at Disney.`,
   };
   let result = { value: { summary: baseline.summary, actions: [] as string[] }, fallback: true };
   if (alumni.length) {
     const schema = z.object({ summary: z.string(), actions: z.array(z.string()).length(3) });
-    result = await aiJson("Analyze the supplied cohort's year-by-year paths. JSON {summary:string,actions:[3 concrete personalized next steps for THIS semester]}. Summarize actual common patterns and when they happen, no invented counts. Some alumni may have adjacent roles; never imply everyone reached the exact goal company. Actions must address the student's gaps and include a specific achievable first move. Paths are descriptive, not guarantees.", { student: publicPerson(user), goal: { role, company, relatedCareerFamily: family, companySpecificMatches: companyMatches, totalRelatedAlumni: alumni.length }, evidence: steps, alumni }, x => schema.parse(x), result.value);
+    result = await aiJson("Analyze the supplied cohort's year-by-year paths. JSON {summary:string,actions:[3 concrete personalized next steps for THIS semester]}. Summarize actual common patterns and when they happen, no invented counts. Some alumni may have adjacent roles; never imply everyone reached the exact goal company. Use the requested industry as context and prioritize alumni whose supplied profiles mention it, but do not invent industry details. Actions must address the student's gaps and include a specific achievable first move. Paths are descriptive, not guarantees.", { student: publicPerson(user), goal: { role, company, industry, relatedCareerFamily: family, companySpecificMatches: companyMatches, industryRelatedProfiles: industryMatches, totalRelatedAlumni: alumni.length }, evidence: steps, alumni }, x => schema.parse(x), result.value);
   }
   const companyNote = company ? ` Rates use this broader related-role sample; ${companyMatches} company-specific match${companyMatches === 1 ? "" : "es"} found, prioritized in the alumni list.` : "";
-  const path = { ...baseline, summary: `${result.value.summary}${companyNote}`, fallback: result.fallback };
+  const industryNote = industry ? ` ${industryMatches} related profile${industryMatches === 1 ? "" : "s"} mention${industryMatches === 1 ? "s" : ""} this industry; this is a relevance hint, not a guaranteed match.` : "";
+  const path = { ...baseline, summary: `${result.value.summary}${companyNote}${industryNote}`, fallback: result.fallback };
   const p = publicPerson(user);
   await db.update(peopleTable).set({
-    profile: { ...(user.profile as object), dreamRole: role, dreamCompany: company },
+    profile: { ...(user.profile as object), dreamRole: role, dreamCompany: company, dreamIndustry: industry },
     path: { ...path, actions: result.value.actions, roadmapVersion: ROADMAP_VERSION },
   }).where(eq(peopleTable.id, p.id));
   return path;

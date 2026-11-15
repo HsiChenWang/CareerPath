@@ -13,6 +13,18 @@ export const HealthCheckResponse = zod.object({
 })
 
 
+export const getSessionResponseUserOneOneDreamIndustryMax = 120;
+
+export const getSessionResponseUserOneOneLinkedinMax = 500;
+
+
+export const getSessionResponseUserOneOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const getSessionResponseUserOneOneContactEmailMax = 254;
+
+
+export const getSessionResponseUserOneOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const getSessionResponseUserOneOnePhoneMax = 40;
+
 export const getSessionResponseUserOneOneMaxChatsMin = 0;
 export const getSessionResponseUserOneOneMaxChatsMax = 30;
 
@@ -33,8 +45,12 @@ export const GetSessionResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(getSessionResponseUserOneOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(getSessionResponseUserOneOneLinkedinMax).regex(getSessionResponseUserOneOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(getSessionResponseUserOneOneContactEmailMax).regex(getSessionResponseUserOneOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(getSessionResponseUserOneOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -72,6 +88,18 @@ export const LoginBody = zod.object({
   "password": zod.string()
 })
 
+export const loginResponseUserOneOneDreamIndustryMax = 120;
+
+export const loginResponseUserOneOneLinkedinMax = 500;
+
+
+export const loginResponseUserOneOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const loginResponseUserOneOneContactEmailMax = 254;
+
+
+export const loginResponseUserOneOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const loginResponseUserOneOnePhoneMax = 40;
+
 export const loginResponseUserOneOneMaxChatsMin = 0;
 export const loginResponseUserOneOneMaxChatsMax = 30;
 
@@ -92,8 +120,12 @@ export const LoginResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(loginResponseUserOneOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(loginResponseUserOneOneLinkedinMax).regex(loginResponseUserOneOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(loginResponseUserOneOneContactEmailMax).regex(loginResponseUserOneOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(loginResponseUserOneOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -137,6 +169,18 @@ export const RegisterBody = zod.object({
   "role": zod.enum(['student', 'alumni'])
 })
 
+export const registerResponseUserOneOneDreamIndustryMax = 120;
+
+export const registerResponseUserOneOneLinkedinMax = 500;
+
+
+export const registerResponseUserOneOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const registerResponseUserOneOneContactEmailMax = 254;
+
+
+export const registerResponseUserOneOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const registerResponseUserOneOnePhoneMax = 40;
+
 export const registerResponseUserOneOneMaxChatsMin = 0;
 export const registerResponseUserOneOneMaxChatsMax = 30;
 
@@ -157,8 +201,12 @@ export const RegisterResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(registerResponseUserOneOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(registerResponseUserOneOneLinkedinMax).regex(registerResponseUserOneOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(registerResponseUserOneOneContactEmailMax).regex(registerResponseUserOneOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(registerResponseUserOneOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -195,6 +243,18 @@ export const DemoLoginBody = zod.object({
   "role": zod.enum(['student', 'alumni'])
 })
 
+export const demoLoginResponseUserOneOneDreamIndustryMax = 120;
+
+export const demoLoginResponseUserOneOneLinkedinMax = 500;
+
+
+export const demoLoginResponseUserOneOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const demoLoginResponseUserOneOneContactEmailMax = 254;
+
+
+export const demoLoginResponseUserOneOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const demoLoginResponseUserOneOnePhoneMax = 40;
+
 export const demoLoginResponseUserOneOneMaxChatsMin = 0;
 export const demoLoginResponseUserOneOneMaxChatsMax = 30;
 
@@ -215,8 +275,12 @@ export const DemoLoginResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(demoLoginResponseUserOneOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(demoLoginResponseUserOneOneLinkedinMax).regex(demoLoginResponseUserOneOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(demoLoginResponseUserOneOneContactEmailMax).regex(demoLoginResponseUserOneOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(demoLoginResponseUserOneOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -254,6 +318,18 @@ export const LogoutResponse = zod.object({
 })
 
 
+export const saveProfileBodyDreamIndustryMax = 120;
+
+export const saveProfileBodyLinkedinMax = 500;
+
+
+export const saveProfileBodyLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const saveProfileBodyContactEmailMax = 254;
+
+
+export const saveProfileBodyContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const saveProfileBodyPhoneMax = 40;
+
 export const saveProfileBodyMaxChatsMin = 0;
 export const saveProfileBodyMaxChatsMax = 30;
 
@@ -273,8 +349,12 @@ export const SaveProfileBody = zod.object({
   "interests": zod.array(zod.string()).optional(),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(saveProfileBodyDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(saveProfileBodyLinkedinMax).regex(saveProfileBodyLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(saveProfileBodyContactEmailMax).regex(saveProfileBodyContactEmailRegExp).optional(),
+  "phone": zod.string().max(saveProfileBodyPhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -282,6 +362,18 @@ export const SaveProfileBody = zod.object({
   "maxChats": zod.number().int().min(saveProfileBodyMaxChatsMin).max(saveProfileBodyMaxChatsMax).optional(),
   "bio": zod.string().optional()
 })
+
+export const saveProfileResponseOneDreamIndustryMax = 120;
+
+export const saveProfileResponseOneLinkedinMax = 500;
+
+
+export const saveProfileResponseOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const saveProfileResponseOneContactEmailMax = 254;
+
+
+export const saveProfileResponseOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const saveProfileResponseOnePhoneMax = 40;
 
 export const saveProfileResponseOneMaxChatsMin = 0;
 export const saveProfileResponseOneMaxChatsMax = 30;
@@ -302,8 +394,12 @@ export const SaveProfileResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(saveProfileResponseOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(saveProfileResponseOneLinkedinMax).regex(saveProfileResponseOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(saveProfileResponseOneContactEmailMax).regex(saveProfileResponseOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(saveProfileResponseOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -342,6 +438,18 @@ export const GetPeopleQueryParams = zod.object({
   "company": zod.coerce.string().optional()
 })
 
+export const getPeopleResponseOneDreamIndustryMax = 120;
+
+export const getPeopleResponseOneLinkedinMax = 500;
+
+
+export const getPeopleResponseOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const getPeopleResponseOneContactEmailMax = 254;
+
+
+export const getPeopleResponseOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const getPeopleResponseOnePhoneMax = 40;
+
 export const getPeopleResponseOneMaxChatsMin = 0;
 export const getPeopleResponseOneMaxChatsMax = 30;
 
@@ -361,8 +469,12 @@ export const GetPeopleResponseItem = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(getPeopleResponseOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(getPeopleResponseOneLinkedinMax).regex(getPeopleResponseOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(getPeopleResponseOneContactEmailMax).regex(getPeopleResponseOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(getPeopleResponseOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -399,6 +511,18 @@ export const GetPersonParams = zod.object({
   "id": zod.coerce.string()
 })
 
+export const getPersonResponseOneDreamIndustryMax = 120;
+
+export const getPersonResponseOneLinkedinMax = 500;
+
+
+export const getPersonResponseOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const getPersonResponseOneContactEmailMax = 254;
+
+
+export const getPersonResponseOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const getPersonResponseOnePhoneMax = 40;
+
 export const getPersonResponseOneMaxChatsMin = 0;
 export const getPersonResponseOneMaxChatsMax = 30;
 
@@ -418,8 +542,12 @@ export const GetPersonResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(getPersonResponseOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(getPersonResponseOneLinkedinMax).regex(getPersonResponseOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(getPersonResponseOneContactEmailMax).regex(getPersonResponseOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(getPersonResponseOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -452,12 +580,27 @@ export const GetPersonResponse = zod.object({
 
 
 
+export const findPathBodyIndustryMax = 120;
+
 
 
 export const FindPathBody = zod.object({
   "role": zod.string().min(1),
-  "company": zod.string().optional()
+  "company": zod.string().optional(),
+  "industry": zod.string().max(findPathBodyIndustryMax).optional()
 })
+
+export const findPathResponseAlumniItemOneDreamIndustryMax = 120;
+
+export const findPathResponseAlumniItemOneLinkedinMax = 500;
+
+
+export const findPathResponseAlumniItemOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const findPathResponseAlumniItemOneContactEmailMax = 254;
+
+
+export const findPathResponseAlumniItemOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const findPathResponseAlumniItemOnePhoneMax = 40;
 
 export const findPathResponseAlumniItemOneMaxChatsMin = 0;
 export const findPathResponseAlumniItemOneMaxChatsMax = 30;
@@ -467,6 +610,7 @@ export const findPathResponseAlumniItemOneMaxChatsMax = 30;
 export const FindPathResponse = zod.object({
   "role": zod.string(),
   "company": zod.string(),
+  "industry": zod.string().optional(),
   "summary": zod.string(),
   "total": zod.number().int(),
   "steps": zod.array(zod.object({
@@ -493,8 +637,12 @@ export const FindPathResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(findPathResponseAlumniItemOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(findPathResponseAlumniItemOneLinkedinMax).regex(findPathResponseAlumniItemOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(findPathResponseAlumniItemOneContactEmailMax).regex(findPathResponseAlumniItemOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(findPathResponseAlumniItemOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -531,6 +679,7 @@ export const FindPathResponse = zod.object({
 export const GetGapResponse = zod.object({
   "role": zod.string(),
   "company": zod.string(),
+  "industry": zod.string().optional(),
   "completed": zod.number().int(),
   "total": zod.number().int(),
   "steps": zod.array(zod.object({
@@ -560,6 +709,7 @@ export const UpdateGapStepBody = zod.object({
 export const UpdateGapStepResponse = zod.object({
   "role": zod.string(),
   "company": zod.string(),
+  "industry": zod.string().optional(),
   "completed": zod.number().int(),
   "total": zod.number().int(),
   "steps": zod.array(zod.object({
@@ -577,6 +727,18 @@ export const UpdateGapStepResponse = zod.object({
   "actions": zod.array(zod.string())
 })
 
+
+export const getConversationsResponsePersonOneDreamIndustryMax = 120;
+
+export const getConversationsResponsePersonOneLinkedinMax = 500;
+
+
+export const getConversationsResponsePersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const getConversationsResponsePersonOneContactEmailMax = 254;
+
+
+export const getConversationsResponsePersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const getConversationsResponsePersonOnePhoneMax = 40;
 
 export const getConversationsResponsePersonOneMaxChatsMin = 0;
 export const getConversationsResponsePersonOneMaxChatsMax = 30;
@@ -599,8 +761,12 @@ export const GetConversationsResponseItem = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(getConversationsResponsePersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(getConversationsResponsePersonOneLinkedinMax).regex(getConversationsResponsePersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(getConversationsResponsePersonOneContactEmailMax).regex(getConversationsResponsePersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(getConversationsResponsePersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -643,6 +809,18 @@ export const StartConversationBody = zod.object({
   "personId": zod.string()
 })
 
+export const startConversationResponsePersonOneDreamIndustryMax = 120;
+
+export const startConversationResponsePersonOneLinkedinMax = 500;
+
+
+export const startConversationResponsePersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const startConversationResponsePersonOneContactEmailMax = 254;
+
+
+export const startConversationResponsePersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const startConversationResponsePersonOnePhoneMax = 40;
+
 export const startConversationResponsePersonOneMaxChatsMin = 0;
 export const startConversationResponsePersonOneMaxChatsMax = 30;
 
@@ -664,8 +842,12 @@ export const StartConversationResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(startConversationResponsePersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(startConversationResponsePersonOneLinkedinMax).regex(startConversationResponsePersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(startConversationResponsePersonOneContactEmailMax).regex(startConversationResponsePersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(startConversationResponsePersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -749,6 +931,18 @@ export const SafetyActionResponse = zod.object({
 })
 
 
+export const getChatsResponsePersonOneDreamIndustryMax = 120;
+
+export const getChatsResponsePersonOneLinkedinMax = 500;
+
+
+export const getChatsResponsePersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const getChatsResponsePersonOneContactEmailMax = 254;
+
+
+export const getChatsResponsePersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const getChatsResponsePersonOnePhoneMax = 40;
+
 export const getChatsResponsePersonOneMaxChatsMin = 0;
 export const getChatsResponsePersonOneMaxChatsMax = 30;
 
@@ -772,8 +966,12 @@ export const GetChatsResponseItem = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(getChatsResponsePersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(getChatsResponsePersonOneLinkedinMax).regex(getChatsResponsePersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(getChatsResponsePersonOneContactEmailMax).regex(getChatsResponsePersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(getChatsResponsePersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -829,6 +1027,18 @@ export const RequestChatBody = zod.object({
   "note": zod.string()
 })
 
+export const requestChatResponsePersonOneDreamIndustryMax = 120;
+
+export const requestChatResponsePersonOneLinkedinMax = 500;
+
+
+export const requestChatResponsePersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const requestChatResponsePersonOneContactEmailMax = 254;
+
+
+export const requestChatResponsePersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const requestChatResponsePersonOnePhoneMax = 40;
+
 export const requestChatResponsePersonOneMaxChatsMin = 0;
 export const requestChatResponsePersonOneMaxChatsMax = 30;
 
@@ -852,8 +1062,12 @@ export const RequestChatResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(requestChatResponsePersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(requestChatResponsePersonOneLinkedinMax).regex(requestChatResponsePersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(requestChatResponsePersonOneContactEmailMax).regex(requestChatResponsePersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(requestChatResponsePersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -907,6 +1121,18 @@ export const UpdateChatBody = zod.object({
   "notes": zod.string().optional()
 })
 
+export const updateChatResponsePersonOneDreamIndustryMax = 120;
+
+export const updateChatResponsePersonOneLinkedinMax = 500;
+
+
+export const updateChatResponsePersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const updateChatResponsePersonOneContactEmailMax = 254;
+
+
+export const updateChatResponsePersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const updateChatResponsePersonOnePhoneMax = 40;
+
 export const updateChatResponsePersonOneMaxChatsMin = 0;
 export const updateChatResponsePersonOneMaxChatsMax = 30;
 
@@ -930,8 +1156,12 @@ export const UpdateChatResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(updateChatResponsePersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(updateChatResponsePersonOneLinkedinMax).regex(updateChatResponsePersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(updateChatResponsePersonOneContactEmailMax).regex(updateChatResponsePersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(updateChatResponsePersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -981,11 +1211,47 @@ export const DownloadCalendarParams = zod.object({
 export const DownloadCalendarResponse = zod.unknown()
 
 
+export const getNetworkResponseConnectionsItemPersonOneDreamIndustryMax = 120;
+
+export const getNetworkResponseConnectionsItemPersonOneLinkedinMax = 500;
+
+
+export const getNetworkResponseConnectionsItemPersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const getNetworkResponseConnectionsItemPersonOneContactEmailMax = 254;
+
+
+export const getNetworkResponseConnectionsItemPersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const getNetworkResponseConnectionsItemPersonOnePhoneMax = 40;
+
 export const getNetworkResponseConnectionsItemPersonOneMaxChatsMin = 0;
 export const getNetworkResponseConnectionsItemPersonOneMaxChatsMax = 30;
 
+export const getNetworkResponseChatsItemPersonOneDreamIndustryMax = 120;
+
+export const getNetworkResponseChatsItemPersonOneLinkedinMax = 500;
+
+
+export const getNetworkResponseChatsItemPersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const getNetworkResponseChatsItemPersonOneContactEmailMax = 254;
+
+
+export const getNetworkResponseChatsItemPersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const getNetworkResponseChatsItemPersonOnePhoneMax = 40;
+
 export const getNetworkResponseChatsItemPersonOneMaxChatsMin = 0;
 export const getNetworkResponseChatsItemPersonOneMaxChatsMax = 30;
+
+export const getNetworkResponseFollowupsItemPersonOneDreamIndustryMax = 120;
+
+export const getNetworkResponseFollowupsItemPersonOneLinkedinMax = 500;
+
+
+export const getNetworkResponseFollowupsItemPersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const getNetworkResponseFollowupsItemPersonOneContactEmailMax = 254;
+
+
+export const getNetworkResponseFollowupsItemPersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const getNetworkResponseFollowupsItemPersonOnePhoneMax = 40;
 
 export const getNetworkResponseFollowupsItemPersonOneMaxChatsMin = 0;
 export const getNetworkResponseFollowupsItemPersonOneMaxChatsMax = 30;
@@ -1009,8 +1275,12 @@ export const GetNetworkResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(getNetworkResponseConnectionsItemPersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(getNetworkResponseConnectionsItemPersonOneLinkedinMax).regex(getNetworkResponseConnectionsItemPersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(getNetworkResponseConnectionsItemPersonOneContactEmailMax).regex(getNetworkResponseConnectionsItemPersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(getNetworkResponseConnectionsItemPersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1061,8 +1331,12 @@ export const GetNetworkResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(getNetworkResponseChatsItemPersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(getNetworkResponseChatsItemPersonOneLinkedinMax).regex(getNetworkResponseChatsItemPersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(getNetworkResponseChatsItemPersonOneContactEmailMax).regex(getNetworkResponseChatsItemPersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(getNetworkResponseChatsItemPersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1119,8 +1393,12 @@ export const GetNetworkResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(getNetworkResponseFollowupsItemPersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(getNetworkResponseFollowupsItemPersonOneLinkedinMax).regex(getNetworkResponseFollowupsItemPersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(getNetworkResponseFollowupsItemPersonOneContactEmailMax).regex(getNetworkResponseFollowupsItemPersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(getNetworkResponseFollowupsItemPersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1172,6 +1450,18 @@ export const UpdateFollowupBody = zod.object({
   "draft": zod.string().optional()
 })
 
+export const updateFollowupResponsePersonOneDreamIndustryMax = 120;
+
+export const updateFollowupResponsePersonOneLinkedinMax = 500;
+
+
+export const updateFollowupResponsePersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const updateFollowupResponsePersonOneContactEmailMax = 254;
+
+
+export const updateFollowupResponsePersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const updateFollowupResponsePersonOnePhoneMax = 40;
+
 export const updateFollowupResponsePersonOneMaxChatsMin = 0;
 export const updateFollowupResponsePersonOneMaxChatsMax = 30;
 
@@ -1193,8 +1483,12 @@ export const UpdateFollowupResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(updateFollowupResponsePersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(updateFollowupResponsePersonOneLinkedinMax).regex(updateFollowupResponsePersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(updateFollowupResponsePersonOneContactEmailMax).regex(updateFollowupResponsePersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(updateFollowupResponsePersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1232,11 +1526,47 @@ export const UpdateFollowupResponse = zod.object({
 })
 
 
+export const advanceTimeResponseConnectionsItemPersonOneDreamIndustryMax = 120;
+
+export const advanceTimeResponseConnectionsItemPersonOneLinkedinMax = 500;
+
+
+export const advanceTimeResponseConnectionsItemPersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const advanceTimeResponseConnectionsItemPersonOneContactEmailMax = 254;
+
+
+export const advanceTimeResponseConnectionsItemPersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const advanceTimeResponseConnectionsItemPersonOnePhoneMax = 40;
+
 export const advanceTimeResponseConnectionsItemPersonOneMaxChatsMin = 0;
 export const advanceTimeResponseConnectionsItemPersonOneMaxChatsMax = 30;
 
+export const advanceTimeResponseChatsItemPersonOneDreamIndustryMax = 120;
+
+export const advanceTimeResponseChatsItemPersonOneLinkedinMax = 500;
+
+
+export const advanceTimeResponseChatsItemPersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const advanceTimeResponseChatsItemPersonOneContactEmailMax = 254;
+
+
+export const advanceTimeResponseChatsItemPersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const advanceTimeResponseChatsItemPersonOnePhoneMax = 40;
+
 export const advanceTimeResponseChatsItemPersonOneMaxChatsMin = 0;
 export const advanceTimeResponseChatsItemPersonOneMaxChatsMax = 30;
+
+export const advanceTimeResponseFollowupsItemPersonOneDreamIndustryMax = 120;
+
+export const advanceTimeResponseFollowupsItemPersonOneLinkedinMax = 500;
+
+
+export const advanceTimeResponseFollowupsItemPersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const advanceTimeResponseFollowupsItemPersonOneContactEmailMax = 254;
+
+
+export const advanceTimeResponseFollowupsItemPersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const advanceTimeResponseFollowupsItemPersonOnePhoneMax = 40;
 
 export const advanceTimeResponseFollowupsItemPersonOneMaxChatsMin = 0;
 export const advanceTimeResponseFollowupsItemPersonOneMaxChatsMax = 30;
@@ -1260,8 +1590,12 @@ export const AdvanceTimeResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(advanceTimeResponseConnectionsItemPersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(advanceTimeResponseConnectionsItemPersonOneLinkedinMax).regex(advanceTimeResponseConnectionsItemPersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(advanceTimeResponseConnectionsItemPersonOneContactEmailMax).regex(advanceTimeResponseConnectionsItemPersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(advanceTimeResponseConnectionsItemPersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1312,8 +1646,12 @@ export const AdvanceTimeResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(advanceTimeResponseChatsItemPersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(advanceTimeResponseChatsItemPersonOneLinkedinMax).regex(advanceTimeResponseChatsItemPersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(advanceTimeResponseChatsItemPersonOneContactEmailMax).regex(advanceTimeResponseChatsItemPersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(advanceTimeResponseChatsItemPersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1370,8 +1708,12 @@ export const AdvanceTimeResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(advanceTimeResponseFollowupsItemPersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(advanceTimeResponseFollowupsItemPersonOneLinkedinMax).regex(advanceTimeResponseFollowupsItemPersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(advanceTimeResponseFollowupsItemPersonOneContactEmailMax).regex(advanceTimeResponseFollowupsItemPersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(advanceTimeResponseFollowupsItemPersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1423,11 +1765,47 @@ export const RecordMilestoneBody = zod.object({
   "title": zod.string().min(recordMilestoneBodyTitleMin).max(recordMilestoneBodyTitleMax)
 })
 
+export const recordMilestoneResponseConnectionsItemPersonOneDreamIndustryMax = 120;
+
+export const recordMilestoneResponseConnectionsItemPersonOneLinkedinMax = 500;
+
+
+export const recordMilestoneResponseConnectionsItemPersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const recordMilestoneResponseConnectionsItemPersonOneContactEmailMax = 254;
+
+
+export const recordMilestoneResponseConnectionsItemPersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const recordMilestoneResponseConnectionsItemPersonOnePhoneMax = 40;
+
 export const recordMilestoneResponseConnectionsItemPersonOneMaxChatsMin = 0;
 export const recordMilestoneResponseConnectionsItemPersonOneMaxChatsMax = 30;
 
+export const recordMilestoneResponseChatsItemPersonOneDreamIndustryMax = 120;
+
+export const recordMilestoneResponseChatsItemPersonOneLinkedinMax = 500;
+
+
+export const recordMilestoneResponseChatsItemPersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const recordMilestoneResponseChatsItemPersonOneContactEmailMax = 254;
+
+
+export const recordMilestoneResponseChatsItemPersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const recordMilestoneResponseChatsItemPersonOnePhoneMax = 40;
+
 export const recordMilestoneResponseChatsItemPersonOneMaxChatsMin = 0;
 export const recordMilestoneResponseChatsItemPersonOneMaxChatsMax = 30;
+
+export const recordMilestoneResponseFollowupsItemPersonOneDreamIndustryMax = 120;
+
+export const recordMilestoneResponseFollowupsItemPersonOneLinkedinMax = 500;
+
+
+export const recordMilestoneResponseFollowupsItemPersonOneLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const recordMilestoneResponseFollowupsItemPersonOneContactEmailMax = 254;
+
+
+export const recordMilestoneResponseFollowupsItemPersonOneContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const recordMilestoneResponseFollowupsItemPersonOnePhoneMax = 40;
 
 export const recordMilestoneResponseFollowupsItemPersonOneMaxChatsMin = 0;
 export const recordMilestoneResponseFollowupsItemPersonOneMaxChatsMax = 30;
@@ -1451,8 +1829,12 @@ export const RecordMilestoneResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(recordMilestoneResponseConnectionsItemPersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(recordMilestoneResponseConnectionsItemPersonOneLinkedinMax).regex(recordMilestoneResponseConnectionsItemPersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(recordMilestoneResponseConnectionsItemPersonOneContactEmailMax).regex(recordMilestoneResponseConnectionsItemPersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(recordMilestoneResponseConnectionsItemPersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1503,8 +1885,12 @@ export const RecordMilestoneResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(recordMilestoneResponseChatsItemPersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(recordMilestoneResponseChatsItemPersonOneLinkedinMax).regex(recordMilestoneResponseChatsItemPersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(recordMilestoneResponseChatsItemPersonOneContactEmailMax).regex(recordMilestoneResponseChatsItemPersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(recordMilestoneResponseChatsItemPersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1561,8 +1947,12 @@ export const RecordMilestoneResponse = zod.object({
   "interests": zod.array(zod.string()),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(recordMilestoneResponseFollowupsItemPersonOneDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(recordMilestoneResponseFollowupsItemPersonOneLinkedinMax).regex(recordMilestoneResponseFollowupsItemPersonOneLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(recordMilestoneResponseFollowupsItemPersonOneContactEmailMax).regex(recordMilestoneResponseFollowupsItemPersonOneContactEmailRegExp).optional(),
+  "phone": zod.string().max(recordMilestoneResponseFollowupsItemPersonOnePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1617,6 +2007,18 @@ export const AskAiBody = zod.object({
   "page": zod.string().optional()
 })
 
+export const askAiResponseProfileDreamIndustryMax = 120;
+
+export const askAiResponseProfileLinkedinMax = 500;
+
+
+export const askAiResponseProfileLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const askAiResponseProfileContactEmailMax = 254;
+
+
+export const askAiResponseProfileContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const askAiResponseProfilePhoneMax = 40;
+
 export const askAiResponseProfileMaxChatsMin = 0;
 export const askAiResponseProfileMaxChatsMax = 30;
 
@@ -1642,8 +2044,12 @@ export const AskAiResponse = zod.object({
   "interests": zod.array(zod.string()).optional(),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(askAiResponseProfileDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(askAiResponseProfileLinkedinMax).regex(askAiResponseProfileLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(askAiResponseProfileContactEmailMax).regex(askAiResponseProfileContactEmailRegExp).optional(),
+  "phone": zod.string().max(askAiResponseProfilePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),
@@ -1658,6 +2064,18 @@ export const AskAiResponse = zod.object({
 export const UploadResumeBody = zod.object({
   "file": zod.instanceof(Blob)
 })
+
+export const uploadResumeResponseProfileDreamIndustryMax = 120;
+
+export const uploadResumeResponseProfileLinkedinMax = 500;
+
+
+export const uploadResumeResponseProfileLinkedinRegExp = new RegExp('^(?:|https?://(?:[A-Za-z0-9-]+\\.)*linkedin\\.com(?:/.*)?)$');
+export const uploadResumeResponseProfileContactEmailMax = 254;
+
+
+export const uploadResumeResponseProfileContactEmailRegExp = new RegExp('^(?:|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$');
+export const uploadResumeResponseProfilePhoneMax = 40;
 
 export const uploadResumeResponseProfileMaxChatsMin = 0;
 export const uploadResumeResponseProfileMaxChatsMax = 30;
@@ -1684,8 +2102,12 @@ export const UploadResumeResponse = zod.object({
   "interests": zod.array(zod.string()).optional(),
   "dreamRole": zod.string().optional(),
   "dreamCompany": zod.string().optional(),
+  "dreamIndustry": zod.string().max(uploadResumeResponseProfileDreamIndustryMax).optional(),
   "currentRole": zod.string().optional(),
   "company": zod.string().optional(),
+  "linkedin": zod.string().max(uploadResumeResponseProfileLinkedinMax).regex(uploadResumeResponseProfileLinkedinRegExp).optional(),
+  "contactEmail": zod.string().max(uploadResumeResponseProfileContactEmailMax).regex(uploadResumeResponseProfileContactEmailRegExp).optional(),
+  "phone": zod.string().max(uploadResumeResponseProfilePhoneMax).optional(),
   "openToChat": zod.boolean().optional(),
   "paused": zod.boolean().optional(),
   "helpTopics": zod.array(zod.string()).optional(),

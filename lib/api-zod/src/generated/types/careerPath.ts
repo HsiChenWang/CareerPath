@@ -11,6 +11,7 @@ import type { Person } from './person';
 export interface CareerPath {
   role: string;
   company: string;
+  industry?: string;
   summary: string;
   total: number;
   steps: PathStep[];

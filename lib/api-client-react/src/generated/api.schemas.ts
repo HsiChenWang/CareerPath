@@ -27,8 +27,22 @@ export interface ProfileInput {
   interests?: string[];
   dreamRole?: string;
   dreamCompany?: string;
+  /** @maxLength 120 */
+  dreamIndustry?: string;
   currentRole?: string;
   company?: string;
+  /**
+     * @maxLength 500
+     * @pattern ^(?:|https?://(?:[A-Za-z0-9-]+\.)*linkedin\.com(?:/.*)?)$
+     */
+  linkedin?: string;
+  /**
+     * @maxLength 254
+     * @pattern ^(?:|[^\s@]+@[^\s@]+\.[^\s@]+)$
+     */
+  contactEmail?: string;
+  /** @maxLength 40 */
+  phone?: string;
   openToChat?: boolean;
   paused?: boolean;
   helpTopics?: string[];
@@ -108,6 +122,8 @@ export interface GoalInput {
   /** @minLength 1 */
   role: string;
   company?: string;
+  /** @maxLength 120 */
+  industry?: string;
 }
 
 export interface PathStep {
@@ -124,6 +140,7 @@ export interface PathStep {
 export interface CareerPath {
   role: string;
   company: string;
+  industry?: string;
   summary: string;
   total: number;
   steps: PathStep[];
@@ -138,6 +155,7 @@ export type GapStep = PathStep & {
 export interface Gap {
   role: string;
   company: string;
+  industry?: string;
   completed: number;
   total: number;
   steps: GapStep[];

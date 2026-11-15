@@ -411,8 +411,12 @@ components:
         interests: { type: array, items: { type: string } }
         dreamRole: { type: string }
         dreamCompany: { type: string }
+        dreamIndustry: { type: string, maxLength: 120 }
         currentRole: { type: string }
         company: { type: string }
+        linkedin: { type: string, pattern: '^(?:|https?://(?:[A-Za-z0-9-]+\.)*linkedin\.com(?:/.*)?)$', maxLength: 500 }
+        contactEmail: { type: string, pattern: '^(?:|[^\s@]+@[^\s@]+\.[^\s@]+)$', maxLength: 254 }
+        phone: { type: string, maxLength: 40 }
         openToChat: { type: boolean }
         paused: { type: boolean }
         helpTopics: { type: array, items: { type: string } }
@@ -447,6 +451,7 @@ components:
       properties:
         role: { type: string, minLength: 1 }
         company: { type: string }
+        industry: { type: string, maxLength: 120 }
     PathStep:
       type: object
       required: [id, stage, title, description, count, total, category, keywords]
@@ -465,6 +470,7 @@ components:
       properties:
         role: { type: string }
         company: { type: string }
+        industry: { type: string }
         summary: { type: string }
         total: { type: integer }
         steps: { type: array, items: { $ref: '#/components/schemas/PathStep' } }
@@ -483,6 +489,7 @@ components:
       properties:
         role: { type: string }
         company: { type: string }
+        industry: { type: string }
         completed: { type: integer }
         total: { type: integer }
         steps: { type: array, items: { $ref: '#/components/schemas/GapStep' } }

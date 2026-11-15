@@ -20,8 +20,22 @@ export interface ProfileInput {
   interests?: string[];
   dreamRole?: string;
   dreamCompany?: string;
+  /** @maxLength 120 */
+  dreamIndustry?: string;
   currentRole?: string;
   company?: string;
+  /**
+     * @maxLength 500
+     * @pattern ^(?:|https?://(?:[A-Za-z0-9-]+\.)*linkedin\.com(?:/.*)?)$
+     */
+  linkedin?: string;
+  /**
+     * @maxLength 254
+     * @pattern ^(?:|[^\s@]+@[^\s@]+\.[^\s@]+)$
+     */
+  contactEmail?: string;
+  /** @maxLength 40 */
+  phone?: string;
   openToChat?: boolean;
   paused?: boolean;
   helpTopics?: string[];

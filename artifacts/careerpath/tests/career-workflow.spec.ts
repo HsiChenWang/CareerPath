@@ -62,7 +62,7 @@ const gap = {
 };
 
 async function mockCareerApi(page: Page, options: { hasPath?: boolean } = {}) {
-  const mappedGoals: Array<{ role: string; company?: string }> = [];
+  const mappedGoals: Array<{ role: string; company?: string; industry?: string }> = [];
 
   await page.route("**/api/**", async (route) => {
     const request = route.request();
@@ -75,7 +75,7 @@ async function mockCareerApi(page: Page, options: { hasPath?: boolean } = {}) {
       await route.fulfill({ json: [alum] });
     } else if (url.pathname === "/api/path" && request.method() === "POST") {
       mappedGoals.push(request.postDataJSON());
-      await route.fulfill({ json: path });
+      await route.fulfill({ json: { ...path, industry: request.postDataJSON().industry } });
     } else if (url.pathname === "/api/gap") {
       await route.fulfill({ json: options.hasPath ? gap : { ...gap, role: "", company: "", total: 0, steps: [], actions: [] } });
     } else {
@@ -326,6 +326,12 @@ test("fills student and alumni profile fields with clearly labeled LinkedIn demo
     const page = await browser.newPage();
     await mockProfileApi(page, role);
     await page.goto("/profile");
+    await expect(page.getByTestId("input-contact-linkedin")).toBeVisible();
+    await expect(page.getByTestId("input-contact-email")).toBeVisible();
+    await expect(page.getByTestId("input-contact-phone")).toBeVisible();
+    await expect(page.getByTestId("input-contact-linkedin")).not.toHaveAttribute("required");
+    await expect(page.getByTestId("input-contact-email")).not.toHaveAttribute("required");
+    await expect(page.getByTestId("input-contact-phone")).not.toHaveAttribute("required");
     await page.getByTestId("button-linkedin-autofill").click();
 
     await expect(page.getByText("Uses sample profile details only.", { exact: false })).toBeVisible();
@@ -342,6 +348,19 @@ test("fills student and alumni profile fields with clearly labeled LinkedIn demo
 
     await page.close();
   }
+});
+
+test("includes an optional industry with the company in path searches", async ({ page }) => {
+  const mappedGoals = await mockCareerApi(page);
+  await page.goto("/path-finder");
+
+  await page.getByTestId("input-dream-role").fill("Product Manager");
+  await page.getByTestId("input-dream-company").fill("Google");
+  await page.getByTestId("input-dream-industry").fill("Technology");
+  await page.getByTestId("button-find-path").click();
+
+  await expect(page.getByTestId("text-path-industry")).toHaveText("Industry: Technology");
+  expect(mappedGoals).toEqual([{ role: "Product Manager", company: "Google", industry: "Technology" }]);
 });
 
 test("gives alumni a Chat Session tab and a schedule of confirmed chats", async ({ page }) => {

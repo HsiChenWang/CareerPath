@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText, Linkedin, Sparkles, UploadCloud, Wand2, X } from "lucide-react";
+import { FileText, Linkedin, Mail, Phone, Sparkles, UploadCloud, Wand2, X } from "lucide-react";
 import { useAskAi, useSaveProfile, useUploadResume, getGetSessionQueryKey, getGetGapQueryKey, getGetPeopleQueryKey } from "@workspace/api-client-react";
 import type { AiResult, ProfileInput, Session } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { errMsg, useMe, isProfileComplete, LEVELS, SCHOOLS, PATH_KEY } from "@/lib/cp";
 import { cn } from "@/lib/utils";
 
-const KEYS: (keyof ProfileInput)[] = ["name", "school", "major", "level", "year", "gradYear", "clubs", "experience", "skills", "courses", "interests", "dreamRole", "dreamCompany", "currentRole", "company", "openToChat", "paused", "helpTopics", "availability", "maxChats", "bio"];
+const KEYS: (keyof ProfileInput)[] = ["name", "school", "major", "level", "year", "gradYear", "clubs", "experience", "skills", "courses", "interests", "dreamRole", "dreamCompany", "dreamIndustry", "currentRole", "company", "linkedin", "contactEmail", "phone", "openToChat", "paused", "helpTopics", "availability", "maxChats", "bio"];
 const LIST_KEYS = ["clubs", "experience", "skills", "courses", "interests", "helpTopics", "availability"] as const;
 
 function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
@@ -296,6 +296,30 @@ export default function Profile() {
               <Field label="Graduation year"><Input type="number" value={form.gradYear ?? ""} onChange={(e) => set("gradYear", e.target.value ? Number(e.target.value) : undefined)} className={cn("h-11 rounded-xl", hl("gradYear"))} data-testid="input-grad-year" /></Field>
             </div>
             <div className="mt-5"><Field label="Short bio"><Textarea value={form.bio ?? ""} onChange={(e) => set("bio", e.target.value)} rows={3} className={cn("rounded-xl", hl("bio"))} data-testid="input-bio" /></Field></div>
+          </Card>
+
+          <Card eyebrow="Contact options" title="Optional ways to reach you">
+            <p className="mb-5 text-sm text-muted-foreground">Only the contact details you add here appear on your profile.</p>
+            <div className="grid gap-5 md:grid-cols-2">
+              <Field label="LinkedIn profile">
+                <div className="relative">
+                  <Linkedin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                  <Input type="url" value={form.linkedin ?? ""} onChange={(e) => set("linkedin", e.target.value)} placeholder="https://linkedin.com/in/yourname" className="h-11 rounded-xl pl-10" data-testid="input-contact-linkedin" />
+                </div>
+              </Field>
+              <Field label="Public email">
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                  <Input type="email" value={form.contactEmail ?? ""} onChange={(e) => set("contactEmail", e.target.value)} placeholder="you@example.com" className="h-11 rounded-xl pl-10" data-testid="input-contact-email" />
+                </div>
+              </Field>
+              <Field label="Phone number">
+                <div className="relative">
+                  <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                  <Input type="tel" value={form.phone ?? ""} onChange={(e) => set("phone", e.target.value)} placeholder="+1 (213) 555-0123" className="h-11 rounded-xl pl-10" data-testid="input-contact-phone" />
+                </div>
+              </Field>
+            </div>
           </Card>
 
           <Card eyebrow="Experience" title="What you have done">

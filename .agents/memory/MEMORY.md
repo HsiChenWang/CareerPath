@@ -1,0 +1,1 @@
+- [Public profile contacts](public-profile-contacts.md) — keep contact methods opt-in and separate from the login email.

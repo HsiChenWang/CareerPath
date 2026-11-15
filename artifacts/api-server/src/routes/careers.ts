@@ -18,7 +18,8 @@ router.patch("/profile", async (req, res) => {
   if (input.school && !schools.includes(input.school)) throw new HttpError(400, "Choose a USC school.");
   const profile = { ...(user.profile as object), ...input };
   const goalChanged = input.dreamRole !== undefined && input.dreamRole !== publicPerson(user).dreamRole
-    || input.dreamCompany !== undefined && input.dreamCompany !== publicPerson(user).dreamCompany;
+    || input.dreamCompany !== undefined && input.dreamCompany !== publicPerson(user).dreamCompany
+    || input.dreamIndustry !== undefined && input.dreamIndustry !== publicPerson(user).dreamIndustry;
   const [saved] = await db.update(peopleTable).set({ profile, name: input.name?.trim() || user.name, ...(goalChanged ? { path: null } : {}) }).where(eq(peopleTable.id, user.id)).returning();
   res.json(SaveProfileResponse.parse(publicPerson(saved!)));
 });
@@ -36,17 +37,18 @@ router.get("/people/:id", async (req, res) => {
 });
 router.post("/path", async (req, res) => {
   const body = FindPathBody.parse(req.body);
-  if (!body.role.trim() || body.role.length > 150 || (body.company?.length ?? 0) > 150) throw new HttpError(400, "Enter a career role under 150 characters.");
-  res.json(FindPathResponse.parse(await makePath(req.cpUser!, body.role.trim(), body.company?.trim())));
+  if (!body.role.trim() || body.role.length > 150 || (body.company?.length ?? 0) > 150 || (body.industry?.length ?? 0) > 120) throw new HttpError(400, "Enter a career role under 150 characters and keep company and industry under their limits.");
+  res.json(FindPathResponse.parse(await makePath(req.cpUser!, body.role.trim(), body.company?.trim(), body.industry?.trim())));
 });
 router.get("/gap", async (req, res) => {
   let user = req.cpUser!;
   const p = publicPerson(user);
-  const storedPath = user.path as { role?: string; company?: string; roadmapVersion?: number } | null;
+  const storedPath = user.path as { role?: string; company?: string; industry?: string; roadmapVersion?: number } | null;
   const pathRole = storedPath?.role || p.dreamRole;
   const pathCompany = storedPath?.company || p.dreamCompany;
+  const pathIndustry = storedPath?.industry || p.dreamIndustry;
   if (pathRole && storedPath?.roadmapVersion !== ROADMAP_VERSION) {
-    await makePath(user, pathRole, pathCompany);
+    await makePath(user, pathRole, pathCompany, pathIndustry);
     user = await personRow(user.id);
   }
   const gap = gapFor(user);

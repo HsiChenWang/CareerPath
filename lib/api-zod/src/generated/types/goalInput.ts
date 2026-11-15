@@ -10,4 +10,6 @@ export interface GoalInput {
   /** @minLength 1 */
   role: string;
   company?: string;
+  /** @maxLength 120 */
+  industry?: string;
 }

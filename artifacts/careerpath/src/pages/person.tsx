@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useParams } from "wouter";
-import { ArrowLeft, CalendarClock, Check, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CalendarClock, Check, Linkedin, Mail, Phone, ShieldCheck } from "lucide-react";
 import { useGetPerson, getGetPersonQueryKey } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
 import { ErrorBlock, PersonAvatar, Tag, AiThinking } from "@/components/bits";
@@ -9,6 +9,30 @@ import { SafetyMenu } from "@/components/safety";
 import { PersonActions } from "@/pages/connect";
 import { Skeleton } from "@/components/ui/skeleton";
 import { errMsg, fmtTime, roleLine, useMe } from "@/lib/cp";
+
+function linkedInHref(value?: string) {
+  const raw = value?.trim();
+  if (!raw) return undefined;
+  try {
+    const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+    if (!/^https?:$/.test(url.protocol) || !(url.hostname === "linkedin.com" || url.hostname.endsWith(".linkedin.com"))) return undefined;
+    return url.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function emailHref(value?: string) {
+  const email = value?.trim();
+  return email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? `mailto:${email}` : undefined;
+}
+
+function phoneHref(value?: string) {
+  const phone = value?.trim();
+  if (!phone || phone.replace(/\D/g, "").length < 5) return undefined;
+  const number = phone.replace(/[^\d+]/g, "").replace(/(?!^)\+/g, "");
+  return number ? `tel:${number}` : undefined;
+}
 
 function Section({ title, items }: { title: string; items?: string[] }) {
   if (!items?.length) return null;
@@ -28,6 +52,9 @@ export default function PersonPage() {
   const q = useGetPerson(id, { query: { enabled: !!id, queryKey: getGetPersonQueryKey(id) } });
   const p = q.data;
   const timelineSteps = p?.timeline ?? [];
+  const linkedin = linkedInHref(p?.linkedin);
+  const email = emailHref(p?.contactEmail);
+  const phone = phoneHref(p?.phone);
 
   useEffect(() => {
     if (p) setFocus({ personId: p.id, label: p.name });
@@ -44,18 +71,13 @@ export default function PersonPage() {
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(18rem,0.82fr)_minmax(0,1.38fr)] lg:gap-7">
           <div className="space-y-6">
-            <section className="rise overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm">
-              <div className="relative h-20 overflow-hidden bg-gradient-to-r from-cardinal-deep via-cardinal to-[#b62d22]">
-                <div className="absolute -right-8 -top-16 h-40 w-40 rounded-full border border-white/10" />
-                <div className="absolute -right-1 -top-10 h-28 w-28 rounded-full border border-white/10" />
-                <div className="trail-h absolute bottom-2 left-28 right-0 h-1 opacity-80" />
-              </div>
-              <div className="px-5 pb-5 md:px-6">
-                <div className="-mt-8 flex items-end justify-between">
-                  <PersonAvatar person={p} size={76} className="border-4 border-card shadow-md" />
+            <section className="rise rounded-[1.75rem] border border-border/80 bg-card shadow-sm">
+              <div className="px-5 pb-5 pt-5 md:px-6">
+                <div className="flex items-start justify-between">
+                  <PersonAvatar person={p} size={88} className="border-4 border-card shadow-sm" />
                   {user?.id !== p.id && <SafetyMenu personId={p.id} name={p.name} />}
                 </div>
-                <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+                <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-cardinal">{p.role === "alumni" ? "Alumni profile" : "Student profile"}</p>
                     <h1 className="mt-1 font-display text-3xl leading-tight" data-testid="text-person-name">{p.name}</h1>
@@ -70,6 +92,13 @@ export default function PersonPage() {
                   {p.paused && <Tag>Requests paused</Tag>}
                 </div>
                 {p.bio && <p className="mt-4 text-sm leading-relaxed text-foreground/75">{p.bio}</p>}
+                {(linkedin || email || phone) && (
+                  <nav className="mt-4 flex flex-wrap gap-2" aria-label="Contact options" data-testid="list-profile-contact">
+                    {linkedin && <a href={linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors hover:bg-muted" data-testid="link-contact-linkedin"><Linkedin className="h-4 w-4 text-cardinal" aria-hidden />LinkedIn</a>}
+                    {email && <a href={email} className="inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors hover:bg-muted" data-testid="link-contact-email"><Mail className="h-4 w-4 text-cardinal" aria-hidden />Email</a>}
+                    {phone && <a href={phone} className="inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors hover:bg-muted" data-testid="link-contact-phone"><Phone className="h-4 w-4 text-cardinal" aria-hidden />Phone</a>}
+                  </nav>
+                )}
                 {user?.role === "student" && user.id !== p.id && <div className="mt-5"><PersonActions person={p} /></div>}
               </div>
             </section>

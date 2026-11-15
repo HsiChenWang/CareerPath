@@ -30,6 +30,9 @@ const person = {
   openToChat: true,
   paused: false,
   bio: "From late nights at HackSC to building products at Google.",
+  linkedin: "https://www.linkedin.com/in/priya-shah",
+  contactEmail: "priya@example.com",
+  phone: "+1 (213) 555-0123",
   clubs: ["HackSC", "LavaLab"],
   skills: ["Python", "SQL"],
   interests: ["Product management", "Mentorship"],
@@ -66,6 +69,9 @@ test("shows profile actions, shared details, and a readable career timeline", as
 
   await expect(page.getByTestId("text-person-name")).toHaveText("Priya Shah");
   await expect(page.locator('img[data-testid="img-avatar"]')).toHaveAttribute("src", /avatars\/alumni-01\.jpg$/);
+  await expect(page.getByTestId("link-contact-linkedin")).toHaveAttribute("href", "https://www.linkedin.com/in/priya-shah");
+  await expect(page.getByTestId("link-contact-email")).toHaveAttribute("href", "mailto:priya@example.com");
+  await expect(page.getByTestId("link-contact-phone")).toHaveAttribute("href", "tel:+12135550123");
   await expect(page.getByRole("heading", { name: "Conversation starters" })).toBeVisible();
   await expect(page.getByTestId("text-person-fit")).toContainText("HackSC");
   await expect(page.getByRole("button", { name: /Draft message/ })).toBeVisible();
