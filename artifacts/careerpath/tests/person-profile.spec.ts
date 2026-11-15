@@ -20,6 +20,7 @@ const person = {
   id: "priya",
   name: "Priya Shah",
   role: "alumni",
+  isDemo: true,
   photo: "avatars/alumni-01.jpg",
   school: "Viterbi",
   major: "Computer Science",
@@ -83,7 +84,10 @@ test("shows profile actions, shared details, and a readable career timeline", as
   await expect(page.locator('img[data-testid="img-avatar"]')).toHaveAttribute("src", /avatars\/alumni-01\.jpg$/);
   await expect(page.getByTestId("link-contact-linkedin")).toHaveAttribute("href", "https://www.linkedin.com/in/priya-shah");
   await expect(page.getByTestId("link-contact-email")).toHaveAttribute("href", "mailto:priya@example.com");
+  await expect(page.getByTestId("link-contact-email")).toContainText("priya@example.com");
   await expect(page.getByTestId("link-contact-phone")).toHaveAttribute("href", "tel:+12135550123");
+  await expect(page.getByTestId("link-contact-phone")).toContainText("+1 (213) 555-0123");
+  await expect(page.getByTestId("text-sample-contact-info")).toHaveText("Sample contact info");
   await expect(page.getByRole("heading", { name: "Conversation starters" })).toBeVisible();
   await expect(page.getByTestId("text-person-fit")).toContainText("HackSC");
   await expect(page.getByRole("button", { name: /Draft message/ })).toBeVisible();

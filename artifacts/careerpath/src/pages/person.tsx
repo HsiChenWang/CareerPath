@@ -93,11 +93,14 @@ export default function PersonPage() {
                 </div>
                 {p.bio && <p className="mt-4 text-sm leading-relaxed text-foreground/75">{p.bio}</p>}
                 {(linkedin || email || phone) && (
-                  <nav className="mt-4 flex flex-wrap gap-2" aria-label="Contact options" data-testid="list-profile-contact">
-                    {linkedin && <a href={linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors hover:bg-muted" data-testid="link-contact-linkedin"><Linkedin className="h-4 w-4 text-cardinal" aria-hidden />LinkedIn</a>}
-                    {email && <a href={email} className="inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors hover:bg-muted" data-testid="link-contact-email"><Mail className="h-4 w-4 text-cardinal" aria-hidden />Email</a>}
-                    {phone && <a href={phone} className="inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors hover:bg-muted" data-testid="link-contact-phone"><Phone className="h-4 w-4 text-cardinal" aria-hidden />Phone</a>}
-                  </nav>
+                  <div className="mt-4" data-testid="list-profile-contact">
+                    {p.isDemo && <p className="mb-2 text-xs text-muted-foreground" data-testid="text-sample-contact-info">Sample contact info</p>}
+                    <nav className="flex flex-wrap gap-2" aria-label="Contact options">
+                      {linkedin && <a href={linkedin} target="_blank" rel="noopener noreferrer" title={p.linkedin} className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium transition-colors hover:bg-muted" data-testid="link-contact-linkedin"><Linkedin className="h-4 w-4 shrink-0 text-cardinal" aria-hidden />LinkedIn</a>}
+                      {email && <a href={email} className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium transition-colors hover:bg-muted" data-testid="link-contact-email"><Mail className="h-4 w-4 shrink-0 text-cardinal" aria-hidden /><span className="break-all text-left">{p.contactEmail}</span></a>}
+                      {phone && <a href={phone} className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium transition-colors hover:bg-muted" data-testid="link-contact-phone"><Phone className="h-4 w-4 shrink-0 text-cardinal" aria-hidden /><span>{p.phone}</span></a>}
+                    </nav>
+                  </div>
                 )}
                 {user?.role === "student" && user.id !== p.id && <div className="mt-5"><PersonActions person={p} /></div>}
               </div>

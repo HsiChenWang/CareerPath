@@ -30,6 +30,34 @@ export const publicPerson = (row: PersonRow): Person => {
     id: row.id, name: row.name, role: row.role, isDemo: row.isDemo,
   });
 };
+function stableContactHash(value: string) {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
+  return hash >>> 0;
+}
+export function publicPersonWithDemoContacts(row: PersonRow): Person {
+  const person = publicPerson(row);
+  const profile = row.profile as Record<string, unknown>;
+  const hasSavedContact = ["linkedin", "contactEmail", "phone"].some(key => profile[key] !== undefined && profile[key] !== null);
+  if (!row.isDemo || hasSavedContact) return person;
+
+  // Stable pseudo-random assignment keeps demo contact examples from changing on refresh.
+  const hash = stableContactHash(`${row.role}:${row.id}`);
+  if (hash % 4 !== 0 && hash % 4 !== 3) return person;
+  const slug = `${row.name}-${row.id}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const sampleEmail = `${slug}@example.com`;
+  const sampleLinkedIn = `https://www.linkedin.com/in/demo-${slug}`;
+  const samplePhone = `+1 (202) 555-01${String(hash % 100).padStart(2, "0")}`;
+  const contacts = (() => {
+    switch ((hash >>> 2) % 4) {
+      case 0: return { contactEmail: sampleEmail };
+      case 1: return { linkedin: sampleLinkedIn };
+      case 2: return { phone: samplePhone };
+      default: return { contactEmail: sampleEmail, phone: samplePhone };
+    }
+  })();
+  return GetPersonResponse.parse({ ...person, ...contacts });
+}
 export async function personRow(personId: string) {
   const [person] = await db.select().from(peopleTable).where(eq(peopleTable.id, personId));
   if (!person) throw new HttpError(404, "This Trojan could not be found.");

@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { db, peopleTable } from "@workspace/db";
 import { SaveProfileBody, SaveProfileResponse, GetPeopleQueryParams, GetPeopleResponse, GetPersonParams, GetPersonResponse, FindPathBody, FindPathResponse, GetGapResponse, UpdateGapStepParams, UpdateGapStepBody } from "@workspace/api-zod";
 import { requireUser } from "../middlewares/session";
-import { HttpError, isBlocked, personRow, publicPerson, similarity } from "../lib/domain";
+import { HttpError, isBlocked, personRow, publicPerson, publicPersonWithDemoContacts, similarity } from "../lib/domain";
 import { gapFor, makePath, rankedPeople, ROADMAP_VERSION } from "../lib/careers";
 import { milestoneFollowups } from "../lib/network";
 
@@ -31,7 +31,7 @@ router.get("/people/:id", async (req, res) => {
   const { id } = GetPersonParams.parse(req.params);
   const user = req.cpUser!;
   if (await isBlocked(user.id, id)) throw new HttpError(403, "This connection is blocked. You can unblock them from your conversation.");
-  const person = publicPerson(await personRow(id));
+  const person = publicPersonWithDemoContacts(await personRow(id));
   const fit = similarity(publicPerson(user), person);
   res.json(GetPersonResponse.parse({ ...person, fitReason: fit.reason, fitScore: fit.score }));
 });
