@@ -9,6 +9,7 @@ import { AppNav, Footer, Guard } from '@/components/shell';
 import { CoachProvider } from '@/components/coach';
 import Landing from '@/pages/landing';
 import { Login, Register } from '@/pages/auth';
+import CareerStart from '@/pages/career-start';
 import Explore from '@/pages/explore';
 import PathFinder from '@/pages/path-finder';
 import MyGap from '@/pages/my-gap';
@@ -31,6 +32,7 @@ function Router() {
         <Route path="/" component={Landing} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
+        <Route path="/career-workflow">{() => <Guard role="student"><CareerStart /></Guard>}</Route>
         <Route path="/explore">{() => <Guard role="student"><Explore /></Guard>}</Route>
         <Route path="/path-finder">{() => <Guard role="student"><PathFinder /></Guard>}</Route>
         <Route path="/my-gap">{() => <Guard role="student"><MyGap /></Guard>}</Route>
@@ -59,6 +61,7 @@ function Shell() {
   useEffect(() => {
     const titles: Record<string, string> = {
       '/': 'Find your path', '/login': 'Log in', '/register': 'Join the Trojan community',
+      '/career-workflow': 'Choose your starting point',
       '/explore': 'Explore careers', '/path-finder': 'Path Finder', '/my-gap': 'My Gap',
       '/connect': 'Connect with Trojans', '/messages': 'Messages', '/my-network': 'My Network',
       '/requests': 'Coffee chat requests', '/upcoming-chats': 'Your coffee chats', '/profile': 'Your profile',

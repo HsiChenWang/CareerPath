@@ -36,7 +36,7 @@ export function useMe() {
 export function homeFor(user: Person | null): string {
   if (!user) return "/";
   if (!isProfileComplete(user)) return "/profile?welcome=1";
-  return user.role === "alumni" ? "/requests" : "/explore";
+  return user.role === "alumni" ? "/requests" : "/career-workflow";
 }
 
 export function isProfileComplete(user: {

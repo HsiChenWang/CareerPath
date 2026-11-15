@@ -13,7 +13,7 @@ export default function Explore() {
   const q = useGetPeople({ kind: "explore" });
   return (
     <Page>
-      <CareerWorkflowProgress current="Explore" />
+      <CareerWorkflowProgress current="start" showStartChoiceLink />
       <PageHeader
         eyebrow="Explore"
         title={<>Trojans who started <span className="text-cardinal">where you are.</span></>}
