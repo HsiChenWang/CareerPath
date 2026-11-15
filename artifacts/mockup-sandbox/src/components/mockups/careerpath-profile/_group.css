@@ -1,0 +1,79 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;600&display=swap");
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-cardinal: #990000;
+  --color-cardinal-deep: #6e0000;
+  --color-gold: #ffcc00;
+  --color-gold-soft: #fff4c2;
+  --color-ink: #2a1418;
+  --color-paper: #f7f4f0;
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+  --font-display: "Fraunces", Georgia, serif;
+}
+
+:root {
+  --background: 32 22% 96%;
+  --foreground: 350 33% 12%;
+  --border: 24 16% 87%;
+  --card: 40 40% 99%;
+  --card-foreground: 350 33% 12%;
+  --muted: 30 18% 92%;
+  --muted-foreground: 350 8% 40%;
+  --app-font-sans: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --app-font-serif: "Fraunces", Georgia, serif;
+  --app-font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius: 1rem;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--app-font-sans);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.trail {
+  background-image: radial-gradient(circle, #ffcc00 2px, transparent 2.5px);
+  background-size: 4px 12px;
+  background-repeat: repeat-y;
+  background-position: center top;
+}
+
+.trail-h {
+  background-image: radial-gradient(circle, #ffcc00 2px, transparent 2.5px);
+  background-size: 12px 4px;
+  background-repeat: repeat-x;
+}
+
+.bg-cardinal { background-color: #990000; }
+.bg-cardinal-deep { background-color: #6e0000; }
+.text-cardinal { color: #990000; }
+.text-cardinal-deep { color: #6e0000; }
+.bg-gold { background-color: #ffcc00; }
+.bg-gold-soft { background-color: #fff4c2; }
+.text-gold { color: #ffcc00; }
+.text-ink { color: #2a1418; }
+.text-paper { color: #f7f4f0; }
+.border-cardinal { border-color: #990000; }
+.border-cardinal\/10 { border-color: rgb(153 0 0 / 10%); }
+.border-cardinal\/15 { border-color: rgb(153 0 0 / 15%); }
+.border-cardinal\/25 { border-color: rgb(153 0 0 / 25%); }
+.bg-cardinal\/10 { background-color: rgb(153 0 0 / 10%); }
