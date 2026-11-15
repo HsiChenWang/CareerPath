@@ -9,6 +9,7 @@ import {
 import type { Followup } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
 import { AiThinking, CardSkeletons, EmptyBlock, ErrorBlock, PageHeader, PersonAvatar, Tag } from "@/components/bits";
+import { MessageSession } from "@/components/message-session";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -117,6 +118,14 @@ export default function MyNetwork() {
   const upcoming = n?.chats.filter((c) => c.status === "accepted" && new Date(c.scheduledAt) >= new Date(n.now)) ?? [];
   const waitingPeople = n?.connections.filter((c) => c.status === "Messaged") ?? [];
   const rel = n?.connections.filter((c) => n.chats.some(chat => chat.person.id === c.person.id && chat.status === "completed")) ?? [];
+  const fallbackSuggestions = [
+    ...(upcoming[0] ? [`Prepare a question for your coffee chat with ${upcoming[0].person.name.split(" ")[0]}.`] : []),
+    ...(n?.followups[0] ? [`Follow up with ${n.followups[0].person.name.split(" ")[0]} about your ${n.followups[0].kind}.`] : []),
+    ...(waitingPeople[0] && !n?.followups.length ? [`Plan a thoughtful check-in with ${waitingPeople[0].person.name.split(" ")[0]}.`] : []),
+  ];
+  if (!fallbackSuggestions.length) fallbackSuggestions.push("Make a coffee chat with a Trojan in a role you want to explore.");
+  const weeklySuggestions = weekly.data?.actions.filter((action) => action.trim()).slice(0, 3) ?? [];
+  const visibleSuggestions = weeklySuggestions.length ? weeklySuggestions : fallbackSuggestions;
 
   return (
     <Page>
@@ -128,20 +137,54 @@ export default function MyNetwork() {
           </button>
         )}
       </PageHeader>
-      {q.isLoading ? <div className="space-y-5"><AiThinking label="Writing your weekly networking brief..." className="max-w-md" /><CardSkeletons n={3} /></div> : q.isError || !n ? <ErrorBlock message={errMsg(q.error)} onRetry={() => q.refetch()} /> : (
+      {q.isLoading ? <div className="space-y-5"><AiThinking label="Loading your network..." className="max-w-md" /><CardSkeletons n={3} /></div> : q.isError || !n ? <ErrorBlock message={errMsg(q.error)} onRetry={() => q.refetch()} /> : (
         <div className="space-y-10">
-          <div className="rise relative overflow-hidden rounded-[2rem] bg-cardinal p-7 text-white md:p-9">
-            <div className="trail-h absolute bottom-0 left-0 right-0 h-1" />
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold">This week · {fmtShort(n.now)}</p>
-            <p className="mt-2 max-w-3xl font-display text-2xl leading-snug md:text-3xl" data-testid="text-network-summary">{weekly.data?.text || n.summary}</p>
-            <div className="mt-6 flex flex-wrap gap-6">
-              {[["Follow-ups due", n.followups.length], ["Upcoming chats", upcoming.length], ["Waiting on reply", n.waiting], ["Relationships", n.relationships]].map(([l, v]) => (
-                <div key={l as string}><p className="font-display text-4xl text-gold">{v}</p><p className="text-xs text-white/70">{l}</p></div>
-              ))}
-            </div>
-            <button onClick={() => weekly.mutate({ data: { kind: "weekly" } })} disabled={weekly.isPending} className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-medium hover:bg-white/20" data-testid="button-weekly-coach"><Sparkles className="h-3.5 w-3.5" />{weekly.isPending ? "Thinking..." : "Refresh my weekly coach"}</button>
-            {!!weekly.data?.actions.length && <ul className="mt-4 space-y-1 text-sm text-white/85">{weekly.data.actions.map((a, i) => <li key={i}>· {a}</li>)}</ul>}
+          <div className="rise grid gap-5 overflow-hidden rounded-[2rem] bg-cardinal p-5 text-white shadow-lg md:p-7 lg:grid-cols-[1.1fr_.9fr]">
+            <section className="flex flex-col">
+              <h2 className="font-display text-2xl text-gold">Weekly Suggestion</h2>
+              <ul className="mt-4 space-y-3 text-sm leading-relaxed text-white/90" data-testid="list-weekly-suggestions">
+                {visibleSuggestions.map((suggestion, index) => (
+                  <li key={`${suggestion}-${index}`} className="flex items-start gap-3">
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-gold" aria-hidden="true" />
+                    <span>{suggestion}</span>
+                  </li>
+                ))}
+              </ul>
+              {weekly.isPending && <AiThinking label="Finding your next steps..." className="mt-4 text-white" />}
+              <button onClick={() => weekly.mutate({ data: { kind: "weekly" } })} disabled={weekly.isPending} className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-medium transition-colors hover:bg-white/20 disabled:opacity-60" data-testid="button-weekly-coach"><Sparkles className="h-3.5 w-3.5" />{weekly.isPending ? "Thinking..." : "Refresh suggestions"}</button>
+            </section>
+
+            <section className="rounded-[1.5rem] bg-paper p-5 text-ink" aria-labelledby="upcoming-coffee-title" data-testid="panel-upcoming-coffee">
+              <h2 id="upcoming-coffee-title" className="flex items-center gap-2 font-display text-xl"><CalendarDays className="h-5 w-5 text-cardinal" />Upcoming coffee chat</h2>
+              {upcoming.length ? (
+                <div className="mt-3 space-y-2">
+                  {upcoming.slice(0, 3).map((chat) => (
+                    <Link key={chat.id} href="/upcoming-chats" className="flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-white" data-testid={`link-upcoming-${chat.id}`}>
+                      <PersonAvatar person={chat.person} size={40} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold">{chat.person.name}</span>
+                        <span className="block text-xs text-muted-foreground">{fmtShort(chat.scheduledAt)} · {fmtTime(chat.scheduledAt)}</span>
+                      </span>
+                      <Tag tone="gold">Scheduled</Tag>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-3 rounded-2xl bg-white/70 p-3">
+                  <p className="text-sm text-muted-foreground">No coffee chats scheduled yet.</p>
+                  <Link href="/connect" className="mt-2 inline-block text-sm font-semibold text-cardinal hover:underline">Find a Trojan to meet</Link>
+                </div>
+              )}
+            </section>
           </div>
+
+          <section aria-labelledby="chat-session-title">
+            <div className="mb-4">
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cardinal">Your inbox</p>
+              <h2 id="chat-session-title" className="mt-1 font-display text-2xl">Chat session</h2>
+            </div>
+            <MessageSession />
+          </section>
 
           <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
             <section>
@@ -151,12 +194,6 @@ export default function MyNetwork() {
               )}
             </section>
             <div className="space-y-6">
-              <section className="rounded-[1.75rem] border bg-card p-6">
-                <h2 className="mb-3 flex items-center gap-2 font-display text-xl"><CalendarDays className="h-5 w-5 text-cardinal" />Upcoming chats</h2>
-                {upcoming.length ? upcoming.map((c) => (
-                  <Link key={c.id} href="/upcoming-chats" className="flex items-center gap-3 rounded-2xl p-2 hover:bg-muted" data-testid={`link-upcoming-${c.id}`}><PersonAvatar person={c.person} size={36} /><div><p className="text-sm font-semibold">{c.person.name}</p><p className="text-xs text-muted-foreground">{fmtTime(c.scheduledAt)}</p></div></Link>
-                )) : <p className="text-sm text-muted-foreground">Nothing scheduled.</p>}
-              </section>
               <section className="rounded-[1.75rem] border bg-card p-6">
                 <h2 className="mb-3 flex items-center gap-2 font-display text-xl"><Hourglass className="h-5 w-5 text-cardinal" />Waiting for reply</h2>
                 {waitingPeople.length ? waitingPeople.map((c) => (
