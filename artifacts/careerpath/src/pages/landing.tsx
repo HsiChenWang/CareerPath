@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, ArrowUpRight, Compass, Map, Target, Users, MessageCircle, RefreshCw, ShieldCheck, Coffee } from "lucide-react";
+import { ArrowRight, Compass, Map, Target, Users, MessageCircle, RefreshCw } from "lucide-react";
 import { useDemoLogin, getGetSessionQueryKey } from "@workspace/api-client-react";
 import { Logo } from "@/components/shell";
 import { useToast } from "@/hooks/use-toast";
@@ -143,78 +143,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* PATH SAMPLE */}
-      <section className="mx-auto max-w-7xl px-4 py-24 md:px-8">
-        <div className="grid items-center gap-14 lg:grid-cols-2">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-cardinal">Path Finder, real output</p>
-            <h2 className="mt-3 font-display text-4xl md:text-5xl">Product Manager at Google. Based on 9 Trojans.</h2>
-            <p className="mt-5 text-lg text-foreground/70">Not a generic roadmap. A count of what alumni actually did, and when they did it. Then My Gap holds it against your profile and hands you three moves for this semester.</p>
-          </div>
-          <div className="rounded-[2rem] border bg-card p-6 shadow-lg md:p-8">
-            {[
-              ["Freshman", "Joined a build club (Hack SC, LavaLab)", 7],
-              ["Sophomore", "Shipped a side project with users", 6],
-              ["Junior", "Summer internship, SWE or APM", 6],
-              ["Senior", "Return offer or APM program", 5],
-              ["Now", "Product Manager, Google", 9],
-            ].map(([stage, title, c], i) => (
-              <div key={i} className="relative flex gap-5 pb-6 last:pb-0">
-                <div className="flex flex-col items-center">
-                  <span className="h-4 w-4 rounded-full border-[3px] border-cardinal bg-card" />
-                  {i < 4 && <span className="trail mt-1 w-1 flex-1" />}
-                </div>
-                <div className="flex-1">
-                  <p className="font-mono text-[11px] uppercase tracking-wider text-cardinal">{stage}</p>
-                  <p className="font-semibold">{title}</p>
-                  <div className="mt-2 flex items-center gap-3">
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                      <div className="grow h-full rounded-full bg-gold" style={{ width: `${(Number(c) / 9) * 100}%`, animationDelay: `${i * 120}ms` }} />
-                    </div>
-                    <span className="font-mono text-xs text-muted-foreground">{c} of 9</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* BOTH SIDES */}
-      <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-24 md:px-8 lg:grid-cols-[1.2fr_1fr]">
-        <div className="relative overflow-hidden rounded-[2rem] bg-ink p-10 text-paper">
-          <Coffee className="absolute -bottom-6 -right-6 h-40 w-40 text-white/5" />
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-gold">For alumni</p>
-          <h3 className="mt-3 font-display text-3xl md:text-4xl">Give back on your terms.</h3>
-          <p className="mt-4 max-w-md text-paper/70">Set topics, weekly slots and a monthly cap. Pause anytime. Before you reply, AI tells you who is asking: "Sophomore in Viterbi, in your old hackathon club, wants to become a PM."</p>
-          <button onClick={() => tryDemo("alumni")} className="mt-8 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-3 text-sm font-semibold text-ink transition-transform hover:-translate-y-0.5" data-testid="button-alum-demo">
-            See Priya's requests <ArrowUpRight className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="rounded-[2rem] border bg-card p-10">
-          <ShieldCheck className="h-8 w-8 text-cardinal" />
-          <h3 className="mt-4 font-display text-3xl">Respect is built in.</h3>
-          <ul className="mt-5 space-y-3 text-foreground/75">
-            {["No emails or phone numbers, ever.", "One first message per alum until they reply.", "Five new conversations a day, one nudge max.", "Report or block from any profile or chat."].map((s) => (
-              <li key={s} className="flex gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold ring-2 ring-cardinal/20" />{s}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="relative overflow-hidden bg-cardinal">
-        <div className="trail-h absolute left-0 right-0 top-0 h-1" />
-        <div className="mx-auto flex max-w-7xl flex-col items-start gap-8 px-4 py-24 md:flex-row md:items-end md:justify-between md:px-8">
-          <h2 className="max-w-3xl font-display text-5xl leading-[0.95] text-white md:text-7xl">
-            Somebody already walked your path. <span className="text-gold">Go say hi.</span>
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            <Link href={user ? homeFor(user) : "/register"} className="rounded-full bg-gold px-7 py-4 font-semibold text-ink transition-transform hover:-translate-y-0.5" data-testid="button-cta-start">Get started</Link>
-            <button onClick={() => tryDemo("student")} className="rounded-full border-2 border-white/40 px-7 py-[14px] font-semibold text-white transition-colors hover:bg-white/10" data-testid="button-cta-demo">Try demo</button>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

@@ -81,7 +81,7 @@ function Shell() {
       <div className="flex min-h-[100dvh] flex-col">
         {!bare && <AppNav />}
         <div className="flex flex-1 flex-col"><Router /></div>
-        <Footer />
+        {location !== '/' && <Footer />}
       </div>
     </CoachProvider>
   );
