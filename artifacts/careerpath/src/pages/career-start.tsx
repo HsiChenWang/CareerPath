@@ -1,6 +1,5 @@
 import { ArrowRight, Compass, Map } from "lucide-react";
 import { Link } from "wouter";
-import { CareerWorkflowProgress } from "@/components/career-workflow";
 import { Page } from "@/components/shell";
 import { PageHeader } from "@/components/bits";
 
@@ -26,7 +25,6 @@ const STARTS = [
 export default function CareerStart() {
   return (
     <Page>
-      <CareerWorkflowProgress current="start" />
       <PageHeader
         eyebrow="Start here"
         title={<>How would you like to <span className="text-cardinal">begin?</span></>}

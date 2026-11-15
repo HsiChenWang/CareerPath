@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { errMsg, fmtShort, fmtTime, roleLine, useMe } from "@/lib/cp";
 import { cn } from "@/lib/utils";
 
-export default function Messages() {
+export default function Messages({ title = "Messages" }: { title?: string }) {
   const { user } = useMe();
   const search = useSearch();
   const [, setLocation] = useLocation();
@@ -71,7 +71,7 @@ export default function Messages() {
   return (
     <Page className="pb-24">
       <div className="mb-6 flex items-end justify-between">
-        <h1 className="font-display text-4xl md:text-5xl">Messages</h1>
+        <h1 className="font-display text-4xl md:text-5xl">{title}</h1>
         <span className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-600" />Live</span>
       </div>
       {convos.isError ? <ErrorBlock message={errMsg(convos.error)} onRetry={() => convos.refetch()} /> : (

@@ -44,7 +44,7 @@ export function CoffeeRequest({ person, open, onOpenChange }: { person: Person; 
           qc.invalidateQueries({ queryKey: getGetNetworkQueryKey() });
           toast({ title: "Request sent", description: `${first} will pick a time or suggest another.` });
           onOpenChange(false);
-          setLocation("/upcoming-chats");
+          setLocation("/schedule");
         },
         onError: (e) => toast({ title: "Request not sent", description: errMsg(e), variant: "destructive" }),
       },

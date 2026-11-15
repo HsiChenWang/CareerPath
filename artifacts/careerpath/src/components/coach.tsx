@@ -23,7 +23,8 @@ const PROMPTS: Record<string, string[]> = {
   "/people": ["How do I ask this alum for a coffee chat?", "What do we have in common?", "What should I avoid asking them?"],
   "/messages": ["How do I reply without sounding stiff?", "When is it okay to ask for a referral?", "How long should I wait before a nudge?"],
   "/my-network": ["What should I say in my follow-up?", "Who should I update this week?", "How do I keep a relationship warm?"],
-  "/upcoming-chats": ["How do I prepare for my coffee chat?", "What is a great closing question?", "What should I send after the chat?"],
+  "/schedule": ["How do I prepare for my coffee chat?", "What is a great closing question?", "What should I send after the chat?"],
+  "/chat-session": ["How do I reply without sounding stiff?", "When is it okay to ask for a referral?", "How long should I wait before a nudge?"],
   "/profile": ["How can I make my profile stronger?", "What skills should I list?", "How should I describe my research?"],
   "/requests": ["Summarize who is asking me for time", "How do I decline kindly?", "What topics are students asking about?"],
 };

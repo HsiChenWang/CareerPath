@@ -20,7 +20,11 @@ import { cn } from "@/lib/utils";
 const STUDENT_NAV = [
   ["/connect", "Connect"], ["/my-network", "My Network"],
 ] as const;
-const ALUMNI_NAV = [["/requests", "Requests"], ["/upcoming-chats", "Upcoming Chats"]] as const;
+const ALUMNI_NAV = [
+  ["/requests", "Requests"],
+  ["/chat-session", "Chat Session"],
+  ["/schedule", "Schedule"],
+] as const;
 
 export function Logo({ light }: { light?: boolean }) {
   return (

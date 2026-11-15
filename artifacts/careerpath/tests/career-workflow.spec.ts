@@ -178,9 +178,73 @@ async function mockProfileApi(page: Page, role: "student" | "alumni") {
   });
 }
 
-async function expectCurrentStep(page: Page, label: string, step: number) {
-  await expect(page.getByTestId("text-workflow-progress")).toHaveText(`Step ${step} of 3`);
-  await expect(page.locator('[aria-current="step"]')).toContainText(label);
+async function mockAlumniScheduleApi(page: Page) {
+  const futureTime = "2030-01-02T12:00:00.000Z";
+  const chats = [
+    {
+      id: "alumni-future-chat",
+      studentId: student.id,
+      alumniId: alum.id,
+      person: student,
+      duration: 15,
+      format: "virtual",
+      times: [futureTime],
+      note: "Interested in product management.",
+      status: "accepted",
+      scheduledAt: futureTime,
+      notes: "",
+      summary: "",
+      actionItems: [],
+      createdAt: "2026-11-14T12:00:00.000Z",
+    },
+    {
+      id: "alumni-past-chat",
+      studentId: student.id,
+      alumniId: alum.id,
+      person: student,
+      duration: 30,
+      format: "campus",
+      times: ["2025-01-02T12:00:00.000Z"],
+      note: "",
+      status: "completed",
+      scheduledAt: "2025-01-02T12:00:00.000Z",
+      notes: "",
+      summary: "Discussed product career paths.",
+      actionItems: [],
+      createdAt: "2024-12-15T12:00:00.000Z",
+    },
+    {
+      id: "alumni-pending-chat",
+      studentId: student.id,
+      alumniId: alum.id,
+      person: student,
+      duration: 15,
+      format: "virtual",
+      times: [futureTime],
+      note: "",
+      status: "pending",
+      scheduledAt: "",
+      notes: "",
+      summary: "",
+      actionItems: [],
+      createdAt: "2026-11-14T12:00:00.000Z",
+    },
+  ];
+
+  await page.route("**/api/**", async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname === "/api/auth/me") {
+      await route.fulfill({ json: { user: alum } });
+    } else if (url.pathname === "/api/healthz") {
+      await route.fulfill({ json: { status: "ok" } });
+    } else if (url.pathname === "/api/chats") {
+      await route.fulfill({ json: chats });
+    } else if (url.pathname === "/api/conversations") {
+      await route.fulfill({ json: [] });
+    } else {
+      await route.fulfill({ status: 404, json: { error: `Unexpected API request: ${url.pathname}` } });
+    }
+  });
 }
 
 test("follows an Explore recommendation through a mapped path into My Gap", async ({ page }) => {
@@ -188,13 +252,13 @@ test("follows an Explore recommendation through a mapped path into My Gap", asyn
 
   await page.goto("/explore");
   await expect(page.getByTestId("card-explore-priya")).toBeVisible();
-  await expectCurrentStep(page, "Explore", 1);
+  await expect(page.getByTestId("text-workflow-progress")).toHaveCount(0);
   await expect(page.locator("header nav").getByRole("link", { name: "Messages" })).toHaveCount(0);
   await expect(page.locator("header nav").getByRole("link", { name: "Career" })).toHaveCount(0);
 
   await page.getByTestId("button-explore-path-priya").click();
   await expect(page).toHaveURL(/\/path-finder\?role=Product%20Manager&company=Google/);
-  await expectCurrentStep(page, "Path Finder", 2);
+  await expect(page.getByTestId("text-workflow-progress")).toHaveCount(0);
   await expect(page.getByTestId("input-dream-role")).toHaveValue("Product Manager");
   await expect(page.getByTestId("input-dream-company")).toHaveValue("Google");
   await expect(page.getByTestId("text-path-title")).toHaveText("Product Manager at Google");
@@ -203,7 +267,7 @@ test("follows an Explore recommendation through a mapped path into My Gap", asyn
 
   await page.getByTestId("link-see-gap").click();
   await expect(page).toHaveURL(/\/my-gap$/);
-  await expectCurrentStep(page, "My Gap", 3);
+  await expect(page.getByTestId("text-workflow-progress")).toHaveCount(0);
   await expect(page.getByTestId("text-gap-progress")).toContainText("0/1");
   await expect(page.getByTestId("checkbox-step-internship")).toContainText("Complete a product internship");
 });
@@ -212,14 +276,23 @@ test("returns from an unmapped My Gap to Path Finder with the right step active"
   await mockCareerApi(page);
 
   await page.goto("/my-gap");
-  await expectCurrentStep(page, "My Gap", 3);
+  await expect(page.getByTestId("text-workflow-progress")).toHaveCount(0);
   await expect(page.getByText("Pick a destination first")).toBeVisible();
   await expect(page.getByTestId("link-path-finder")).toHaveAttribute("href", "/path-finder");
 
   await page.getByTestId("link-path-finder").click();
   await expect(page).toHaveURL(/\/path-finder$/);
-  await expectCurrentStep(page, "Path Finder", 2);
+  await expect(page.getByTestId("text-workflow-progress")).toHaveCount(0);
   await expect(page.getByText("No path mapped yet")).toBeVisible();
+});
+
+test("shows the student's two starting choices without the roadmap box", async ({ page }) => {
+  await mockCareerApi(page);
+
+  await page.goto("/career-workflow");
+  await expect(page.getByTestId("text-workflow-progress")).toHaveCount(0);
+  await expect(page.getByTestId("link-start-explore")).toBeVisible();
+  await expect(page.getByTestId("link-start-path-finder")).toBeVisible();
 });
 
 test("keeps My Network focused and AI drafts unsent until the student sends them", async ({ page }) => {
@@ -267,4 +340,22 @@ test("fills student and alumni profile fields with clearly labeled LinkedIn demo
 
     await page.close();
   }
+});
+
+test("gives alumni a Chat Session tab and a schedule of confirmed chats", async ({ page }) => {
+  await mockAlumniScheduleApi(page);
+
+  await page.goto("/chat-session");
+  const nav = page.locator("header nav");
+  await expect(nav.getByRole("link", { name: "Requests" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Chat Session" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Schedule" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Upcoming Chats" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Chat session" })).toBeVisible();
+
+  await nav.getByRole("link", { name: "Schedule" }).click();
+  await expect(page).toHaveURL(/\/schedule$/);
+  await expect(page.getByTestId("card-chat-alumni-future-chat")).toBeVisible();
+  await expect(page.getByTestId("card-chat-alumni-past-chat")).toBeVisible();
+  await expect(page.getByTestId("card-chat-alumni-pending-chat")).toHaveCount(0);
 });

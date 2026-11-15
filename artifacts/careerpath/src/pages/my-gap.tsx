@@ -3,7 +3,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Check, Target } from "lucide-react";
 import { useGetGap, useUpdateGapStep, getGetGapQueryKey, getGetNetworkQueryKey } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
-import { CareerWorkflowProgress } from "@/components/career-workflow";
 import { CardSkeletons, EmptyBlock, ErrorBlock, PageHeader, Tag } from "@/components/bits";
 import { useCoach } from "@/components/coach";
 import { TaskCategoryLists } from "@/components/task-category-lists";
@@ -32,7 +31,6 @@ export default function MyGap() {
 
   return (
     <Page>
-      <CareerWorkflowProgress current="gap" hasPath={!!gap?.steps.length} />
       <PageHeader eyebrow="My Gap" title={<>Where you are, <span className="text-cardinal">against where they were.</span></>} sub={gap?.role ? `Your profile compared to the common path to ${gap.role}${gap.company ? ` at ${gap.company}` : ""}.` : undefined} />
       {q.isLoading ? <CardSkeletons n={3} /> : q.isError ? <ErrorBlock message={errMsg(q.error)} onRetry={() => q.refetch()} /> : !gap || !gap.steps.length ? (
         <EmptyBlock icon={<Target className="h-6 w-6" />} title="Choose a starting point first" body="Explore alumni journeys or find a path to a role, then compare it with your profile here." action={<Link href="/career-workflow" className="rounded-full bg-cardinal px-5 py-2.5 text-sm font-semibold text-white" data-testid="link-career-workflow">Choose how to start</Link>} />

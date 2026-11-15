@@ -194,22 +194,33 @@ function UpcomingCard({ chat, student }: { chat: CoffeeChat; student: boolean })
   );
 }
 
-export function UpcomingChats() {
+export function Schedule() {
   const { user } = useMe();
   const student = user?.role === "student";
   const q = useGetChats({ query: { queryKey: getGetChatsQueryKey(), refetchInterval: 5000 } });
   const all = q.data ?? [];
-  const groups: [string, CoffeeChat[]][] = [
-    ["Upcoming", all.filter((c) => c.status === "accepted" && !c.summary)],
-    ["Needs your answer", all.filter((c) => c.status === "suggested")],
-    ["Requested", all.filter((c) => c.status === "pending")],
-    ["Past chats", all.filter((c) => c.status === "completed" || (c.status === "accepted" && !!c.summary))],
-  ];
+  const scheduled = all.filter((chat) =>
+    (chat.status === "accepted" || chat.status === "completed") && !!chat.scheduledAt,
+  );
+  const now = Date.now();
+  const upcoming = scheduled.filter((chat) =>
+    chat.status === "accepted" && !chat.summary && new Date(chat.scheduledAt).getTime() >= now,
+  );
+  const past = scheduled.filter((chat) => !upcoming.some((upcomingChat) => upcomingChat.id === chat.id));
+  const groups: [string, CoffeeChat[]][] = student
+    ? [
+        ["Upcoming", all.filter((c) => c.status === "accepted" && !c.summary)],
+        ["Needs your answer", all.filter((c) => c.status === "suggested")],
+        ["Requested", all.filter((c) => c.status === "pending")],
+        ["Past chats", all.filter((c) => c.status === "completed" || (c.status === "accepted" && !!c.summary))],
+      ]
+    : [["Upcoming", upcoming], ["Past chats", past]];
+  const visibleChats = student ? all.filter((chat) => chat.status !== "declined") : scheduled;
   return (
     <Page>
-      <PageHeader eyebrow="Coffee chats" title={<>Fifteen minutes <span className="text-cardinal">can change a major.</span></>} sub={student ? "Prep before, notes after. We turn what you heard into next steps." : "Your scheduled chats with students, with a quick brief before each."} />
-      {q.isLoading ? <CardSkeletons n={2} h={280} /> : q.isError ? <ErrorBlock message={errMsg(q.error)} onRetry={() => q.refetch()} /> : !all.filter((c) => c.status !== "declined").length ? (
-        <EmptyBlock icon={<Coffee className="h-6 w-6" />} title="No chats yet" body={student ? "Request a coffee chat from an alum on Connect." : "Accepted requests will appear here."} action={student ? <Link href="/connect" className="rounded-full bg-cardinal px-5 py-2.5 text-sm font-semibold text-white">Find alumni</Link> : undefined} />
+      <PageHeader eyebrow="Schedule" title={<>Your scheduled <span className="text-cardinal">coffee chats.</span></>} sub={student ? "Prep before, notes after. We turn what you heard into next steps." : "All confirmed chats with students, upcoming and past."} />
+      {q.isLoading ? <CardSkeletons n={2} h={280} /> : q.isError ? <ErrorBlock message={errMsg(q.error)} onRetry={() => q.refetch()} /> : !visibleChats.length ? (
+        <EmptyBlock icon={<Coffee className="h-6 w-6" />} title="No scheduled chats yet" body={student ? "Request a coffee chat from an alum on Connect." : "Chats you accept from Requests will appear here."} action={student ? <Link href="/connect" className="rounded-full bg-cardinal px-5 py-2.5 text-sm font-semibold text-white">Find alumni</Link> : undefined} />
       ) : (
         <div className="space-y-12">
           {groups.filter(([, l]) => l.length).map(([title, list]) => (

@@ -83,7 +83,7 @@ export default function MyNetwork() {
               {upcoming.length ? (
                 <div className="mt-3 space-y-2">
                   {upcoming.slice(0, 3).map((chat) => (
-                    <Link key={chat.id} href="/upcoming-chats" className="flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-white" data-testid={`link-upcoming-${chat.id}`}>
+                    <Link key={chat.id} href="/schedule" className="flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-white" data-testid={`link-upcoming-${chat.id}`}>
                       <PersonAvatar person={chat.person} size={40} />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-semibold">{chat.person.name}</span>

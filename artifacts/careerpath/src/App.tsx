@@ -17,7 +17,7 @@ import Connect from '@/pages/connect';
 import PersonPage from '@/pages/person';
 import Messages from '@/pages/messages';
 import MyNetwork from '@/pages/my-network';
-import { Requests, UpcomingChats } from '@/pages/chats';
+import { Requests, Schedule } from '@/pages/chats';
 import Profile from '@/pages/profile';
 import { useMe } from '@/lib/cp';
 
@@ -40,7 +40,9 @@ function Router() {
         <Route path="/my-network">{() => <Guard role="student"><MyNetwork /></Guard>}</Route>
         <Route path="/people/:id">{() => <Guard><PersonPage /></Guard>}</Route>
         <Route path="/messages">{() => <Guard><Messages /></Guard>}</Route>
-        <Route path="/upcoming-chats">{() => <Guard><UpcomingChats /></Guard>}</Route>
+        <Route path="/chat-session">{() => <Guard role="alumni"><Messages title="Chat session" /></Guard>}</Route>
+        <Route path="/schedule">{() => <Guard><Schedule /></Guard>}</Route>
+        <Route path="/upcoming-chats">{() => <Guard><Schedule /></Guard>}</Route>
         <Route path="/requests">{() => <Guard role="alumni"><Requests /></Guard>}</Route>
         <Route path="/profile">{() => <Guard><Profile /></Guard>}</Route>
         <Route component={NotFound} />
@@ -63,8 +65,8 @@ function Shell() {
       '/': 'Find your path', '/login': 'Log in', '/register': 'Join the Trojan community',
       '/career-workflow': 'Choose your starting point',
       '/explore': 'Explore careers', '/path-finder': 'Path Finder', '/my-gap': 'My Gap',
-      '/connect': 'Connect with Trojans', '/messages': 'Messages', '/my-network': 'My Network',
-      '/requests': 'Coffee chat requests', '/upcoming-chats': 'Your coffee chats', '/profile': 'Your profile',
+      '/connect': 'Connect with Trojans', '/messages': 'Messages', '/chat-session': 'Chat session', '/my-network': 'My Network',
+      '/requests': 'Coffee chat requests', '/schedule': 'Schedule', '/upcoming-chats': 'Schedule', '/profile': 'Your profile',
     };
     const page = titles[location] || (location.startsWith('/people/') ? 'Trojan profile' : 'Page not found');
     const title = `${page} · NextStepSC`;
