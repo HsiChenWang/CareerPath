@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, ShieldCheck, Coffee } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Logo } from "@/components/shell";
 import { homeFor, useMe } from "@/lib/cp";
 
@@ -36,6 +36,9 @@ export default function Landing() {
                 Get started <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
+            <p className="rise mt-10 max-w-lg font-display text-3xl leading-tight text-ink md:text-4xl" style={{ animationDelay: "320ms" }}>
+              Somebody already walked your path. <span className="text-cardinal">Go say hi.</span>
+            </p>
           </div>
 
           <div className="rise relative w-full lg:max-w-[400px] xl:max-w-none" style={{ animationDelay: "200ms" }}>
@@ -46,38 +49,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
-      {/* PAGE TWO */}
-      <section className="bg-paper py-8" data-testid="home-second-page">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-            <div className="relative overflow-hidden rounded-[2rem] bg-ink p-10 text-paper">
-              <Coffee className="absolute -bottom-6 -right-6 h-40 w-40 text-white/5" />
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-gold">For alumni</p>
-              <h2 className="mt-3 font-display text-3xl md:text-4xl">Give back on your terms.</h2>
-              <p className="mt-4 max-w-md text-paper/70">Set topics, weekly slots and a monthly cap. Pause anytime. Before you reply, AI tells you who is asking: "Sophomore in Viterbi, in your old hackathon club, wants to become a PM."</p>
-            </div>
-            <div className="rounded-[2rem] border bg-card p-10">
-              <ShieldCheck className="h-8 w-8 text-cardinal" />
-              <h2 className="mt-4 font-display text-3xl">Respect is built in.</h2>
-              <ul className="mt-5 space-y-3 text-foreground/75">
-                {["No emails or phone numbers, ever.", "One first message per alum until they reply.", "Five new conversations a day, one nudge max.", "Report or block from any profile or chat."].map((s) => (
-                  <li key={s} className="flex gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold ring-2 ring-cardinal/20" />{s}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="relative mt-5 overflow-hidden rounded-[2rem] bg-cardinal">
-            <div className="trail-h absolute left-0 right-0 top-0 h-1" />
-            <div className="px-6 py-10 md:px-12 md:py-12">
-              <h2 className="mx-auto max-w-5xl text-center font-display text-4xl leading-tight text-white sm:text-5xl md:text-6xl">
-                Somebody already walked your path. <span className="text-gold">Go say hi.</span>
-              </h2>
-            </div>
-          </div>
-        </div>
-      </section>
-
     </div>
   );
 }
