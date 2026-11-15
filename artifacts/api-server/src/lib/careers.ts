@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const matchCache = new Map<string, { at: number; people: Person[] }>();
 const words = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-export const ROADMAP_VERSION = 2;
+export const ROADMAP_VERSION = 3;
 
 function roleMatches(actual: string, goal: string) {
   if (!words(actual) || !words(goal)) return false;
@@ -96,6 +96,8 @@ function commonSteps(alumni: Person[], role: string): PathStep[] {
     { id: `${prefix}-club`, stage: "Explore", title: `Join ${community}`, description: "Attend an event, meet potential collaborators, and choose one way to contribute this semester.", count: clubCount, total, category: "club", keywords: club ? [club] : [] },
     { id: `${prefix}-course`, stage: "Build foundations", title: `Complete ${foundationCourse}`, description: "Use the course to strengthen a foundation that appears in related alumni profiles; save one project or assignment as evidence.", count: courseCount, total, category: "course", keywords: course ? [course] : [] },
     { id: `${prefix}-course-advanced`, stage: "Build foundations", title: `Add ${followupCourse} to your plan`, description: "Choose a second course that deepens your toolkit, then connect its work to a practical project.", count: nextCourseCount, total, category: "course", keywords: nextCourse ? [nextCourse] : [] },
+    { id: `${prefix}-case-competition`, stage: "Build evidence", title: "Enter a role-relevant case competition", description: "Find a USC or intercollegiate challenge, form a small team, and save your problem-solving approach and final result.", count: 0, total: 0, category: "case-competition", keywords: ["case competition", "case comp"] },
+    { id: `${prefix}-certificate`, stage: "Build foundations", title: "Earn a focused certificate if target roles ask for it", description: "Check current job postings first; choose a short, recognized certificate only when it closes a specific skill gap.", count: 0, total: 0, category: "certificate", keywords: ["certificate", "certification"] },
     { id: `${prefix}-project`, stage: "Build evidence", title: "Ship a student-led project", description: "Set a small scope, build with a team, and write down what you made and what changed because of it.", count: timelineCount(/student project/i), total, category: "project", keywords: ["student project", "project"] },
     { id: `${prefix}-research`, stage: "Build evidence", title: "Try a research or lab experience", description: "Ask a faculty member or lab about a small research task where you can learn by doing.", count: timelineCount(/undergraduate research|research assistant|research role/i), total, category: "research", keywords: ["undergraduate research", "research assistant", "lab"] },
     { id: `${prefix}-skill`, stage: "Build evidence", title: `Practice ${specialty}`, description: "Pick one concrete exercise or project that lets you demonstrate this commonly used skill.", count: skillCount, total, category: "skill", keywords: skill ? [skill] : [] },
@@ -119,6 +121,8 @@ export function gapFor(user: PersonRow): Gap {
       case "club": source = p.clubs; break;
       case "course": source = p.courses; break;
       case "skill": source = p.skills; break;
+      case "case-competition": source = [...p.clubs, ...p.experience]; break;
+      case "certificate": source = [...p.experience, ...p.skills]; break;
       case "first-job": source = [p.currentRole || "", ...p.experience.filter(x => !/intern|research|assistant|project/i.test(x))]; break;
       case "transition":
       case "growth": source = []; break;
@@ -137,8 +141,9 @@ export function gapFor(user: PersonRow): Gap {
   }
   const storedActions = (user.path as Record<string, unknown>).actions;
   const actions = Array.isArray(storedActions) ? storedActions.filter((x): x is string => typeof x === "string").slice(0, 3) : [];
+  const requiredSteps = steps.filter(x => x.category !== "case-competition" && x.category !== "certificate");
   return {
-    role: path.role, company: path.company, completed: steps.filter(x => x.done).length, total: steps.length, steps,
+    role: path.role, company: path.company, completed: requiredSteps.filter(x => x.done).length, total: requiredSteps.length, steps,
     actions: actions.length ? actions : steps.filter(x => !x.done).slice(0, 3).map(x => `This semester: ${x.title.toLowerCase()}. Start with one small action this week.`),
   };
 }

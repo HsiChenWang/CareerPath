@@ -10,9 +10,9 @@ import { AiThinking, EmptyBlock, ErrorBlock, PageHeader, PersonAvatar, Tag } fro
 import { useCoach } from "@/components/coach";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
-import { alumniRateLabel, errMsg, percentOfRelatedAlumni, useMe, PATH_KEY } from "@/lib/cp";
+import { alumniRateLabel, errMsg, isOptionalTask, percentOfRelatedAlumni, TASK_LIST_CATEGORIES, taskListCategory, useMe, PATH_KEY } from "@/lib/cp";
 
-const PATH_CACHE_VERSION = 2;
+const PATH_CACHE_VERSION = 3;
 function loadStored(): CareerPath | null {
   try {
     const raw = sessionStorage.getItem(PATH_KEY);
@@ -79,7 +79,11 @@ export default function PathFinder() {
     onError: (error) => toast({ title: "Could not update this track", description: errMsg(error), variant: "destructive" }),
   });
   const gap = gapQuery.data;
-  const matchedTracks = gap?.steps.filter((step) => step.category !== "advice" && step.done).length ?? 0;
+  const matchedTasks = gap?.steps.filter((step) => step.category !== "advice" && !isOptionalTask(step) && step.done).length ?? 0;
+  const taskLists = TASK_LIST_CATEGORIES.map((category) => ({
+    category,
+    steps: path?.steps.filter((step) => taskListCategory(step) === category) ?? [],
+  }));
 
   return (
     <Page>
@@ -109,27 +113,34 @@ export default function PathFinder() {
               {path.total < 5 && <p className="mt-3 text-xs text-white/70">The related-alumni sample is small, so step percentages are hidden rather than overstated.</p>}
               {path.fallback && <p className="mt-3 text-xs text-white/60">Built from pattern counts while the AI rests. The numbers are real.</p>}
             </div>
-            <section className="mt-8" aria-labelledby="track-list-title">
+            <section className="mt-8" aria-labelledby="task-list-title">
               <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cardinal">Level 2 roadmap</p>
-                  <h3 id="track-list-title" className="mt-1 font-display text-2xl">Detailed track list</h3>
+                  <h3 id="task-list-title" className="mt-1 font-display text-2xl">Task lists</h3>
                   <p className="mt-1 max-w-xl text-sm text-muted-foreground">Each stage is broken into concrete actions. Compare them with your saved profile; resume details count after you import and save them in Profile.</p>
                 </div>
-                {gap && <p className="text-xs font-medium text-muted-foreground" data-testid="text-profile-track-match">{matchedTracks} track{matchedTracks === 1 ? "" : "s"} matched</p>}
+                {gap && <p className="text-xs font-medium text-muted-foreground" data-testid="text-profile-task-match">{matchedTasks} task{matchedTasks === 1 ? "" : "s"} matched</p>}
               </div>
               {gapQuery.isError && <ErrorBlock message={`Profile comparison unavailable: ${errMsg(gapQuery.error)}`} onRetry={() => gapQuery.refetch()} />}
-              {gapQuery.isLoading && <AiThinking label="Comparing this track list with your saved profile..." className="mb-4 max-w-md" />}
+              {gapQuery.isLoading && <AiThinking label="Comparing these tasks with your saved profile..." className="mb-4 max-w-md" />}
               {path.steps.length === 0 ? (
                 <p className="mt-6 text-muted-foreground">No matching alumni timelines yet. Try a broader role name.</p>
               ) : (
-                <ol className="space-y-3">
-                  {path.steps.map((step, index) => {
-                    const profileStep = gap?.steps.find((item) => item.id === step.id);
-                    const done = !!profileStep?.done;
-                    const rate = percentOfRelatedAlumni(step.count, step.total);
-                    return (
-                      <li key={step.id} className="rise" style={{ animationDelay: `${index * 70}ms` }} data-testid={`track-${step.id}`}>
+                <div className="space-y-6">
+                  {taskLists.map(({ category, steps }) => steps.length > 0 && (
+                    <section key={category} aria-label={category} data-testid={`task-list-${category.toLowerCase().replaceAll(" ", "-")}`}>
+                      <div className="mb-3 flex items-center justify-between border-b pb-2">
+                        <h4 className="font-display text-xl">{category}</h4>
+                        <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{steps.length} task{steps.length === 1 ? "" : "s"}</span>
+                      </div>
+                      <ol className="space-y-3">
+                        {steps.map((step, index) => {
+                          const profileStep = gap?.steps.find((item) => item.id === step.id);
+                          const done = !!profileStep?.done;
+                          const rate = percentOfRelatedAlumni(step.count, step.total);
+                          return (
+                            <li key={step.id} className="rise" style={{ animationDelay: `${index * 70}ms` }} data-testid={`task-${step.id}`}>
                         <button
                           type="button"
                           onClick={() => profileStep && toggleStep(profileStep.id, !done)}
@@ -137,7 +148,7 @@ export default function PathFinder() {
                           aria-pressed={done}
                           aria-label={`${done ? "Mark not done" : "Mark done"}: ${step.title}`}
                           className="group flex w-full items-start gap-4 rounded-3xl border bg-card p-5 text-left transition-all hover:border-cardinal/35 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-80"
-                          data-testid={`button-track-${step.id}`}
+                          data-testid={`button-task-${step.id}`}
                         >
                           <span className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 ${done ? "border-cardinal bg-cardinal text-gold" : "border-input group-hover:border-cardinal"}`}>
                             {done && <Check className="h-4 w-4" strokeWidth={3} />}
@@ -145,8 +156,8 @@ export default function PathFinder() {
                           <span className="min-w-0 flex-1">
                             <span className="flex flex-wrap items-center gap-2">
                               <span className="font-mono text-[11px] uppercase tracking-wider text-cardinal">{step.stage}</span>
-                              <Tag>{step.category}</Tag>
                               {profileStep && <Tag tone={done ? "gold" : "muted"}>{done ? "Already done" : "Suggested"}</Tag>}
+                              {isOptionalTask(step) && <Tag tone="muted">Optional</Tag>}
                             </span>
                             <span className="mt-1 block text-lg font-semibold">{step.title}</span>
                             <span className="mt-1 block text-sm text-muted-foreground">
@@ -165,10 +176,13 @@ export default function PathFinder() {
                             )}
                           </span>
                         </button>
-                      </li>
-                    );
-                  })}
-                </ol>
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    </section>
+                  ))}
+                </div>
               )}
             </section>
           </div>

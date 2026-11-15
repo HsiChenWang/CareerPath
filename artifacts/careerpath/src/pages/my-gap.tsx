@@ -7,7 +7,7 @@ import { CareerWorkflowProgress } from "@/components/career-workflow";
 import { CardSkeletons, EmptyBlock, ErrorBlock, PageHeader, Tag } from "@/components/bits";
 import { useCoach } from "@/components/coach";
 import { useToast } from "@/hooks/use-toast";
-import { alumniRateLabel, errMsg } from "@/lib/cp";
+import { alumniRateLabel, errMsg, isOptionalTask, TASK_LIST_CATEGORIES, taskListCategory } from "@/lib/cp";
 import { cn } from "@/lib/utils";
 
 export default function MyGap() {
@@ -43,7 +43,8 @@ export default function MyGap() {
               </svg>
               <div>
                 <p className="font-display text-5xl" data-testid="text-gap-progress">{gap.completed}<span className="text-2xl text-paper/50">/{gap.total}</span></p>
-                <p className="mt-1 text-paper/75">You've completed {gap.completed} of {gap.total} common steps.</p>
+                <p className="mt-1 text-paper/75">You've completed {gap.completed} of {gap.total} core tasks.</p>
+                <p className="mt-2 text-xs text-paper/55">Case competitions and certificates are optional and do not count toward core progress.</p>
               </div>
             </div>
             <div className="rounded-[1.75rem] border bg-card p-6">
@@ -63,24 +64,37 @@ export default function MyGap() {
             </div>
           </div>
           <div className="rounded-[1.75rem] border bg-card p-3 md:p-4">
-            {gap.steps.map((s) => (
-              <button key={s.id} onClick={() => toggle(s.id, !s.done)} disabled={update.isPending} className={cn("group flex w-full items-start gap-4 rounded-2xl p-4 text-left transition-colors hover:bg-muted/60", s.done && "opacity-80")} data-testid={`checkbox-step-${s.id}`}>
-                <span className={cn("mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 transition-all", s.done ? "border-cardinal bg-cardinal text-gold" : "border-input group-hover:border-cardinal")}>
-                  {s.done && <Check className="h-4 w-4" strokeWidth={3} />}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-[11px] uppercase tracking-wider text-cardinal">{s.stage}</span>
-                    <Tag tone={s.done ? "gold" : "muted"}>{s.done ? "Done" : "Not yet"}</Tag>
+            {TASK_LIST_CATEGORIES.map((category) => {
+              const tasks = gap.steps.filter((step) => taskListCategory(step) === category);
+              if (!tasks.length) return null;
+              return (
+                <section key={category} aria-label={category} className="mb-4 last:mb-0" data-testid={`task-list-${category.toLowerCase().replaceAll(" ", "-")}`}>
+                  <div className="mb-2 flex items-center justify-between border-b px-4 pb-2">
+                    <h2 className="font-display text-xl">{category}</h2>
+                    <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{tasks.length} task{tasks.length === 1 ? "" : "s"}</span>
                   </div>
-                  <p className={cn("mt-1 font-semibold", s.done && "line-through decoration-gold decoration-2")}>{s.title}</p>
-                  <p className="mt-0.5 text-sm text-muted-foreground">{s.description}</p>
-                  <p className="mt-1 font-mono text-[11px] text-muted-foreground" data-testid={`text-alumni-rate-${s.id}`}>
-                    {s.category === "advice" ? "Personal advice from a Trojan; not an alumni rate." : alumniRateLabel(s.count, s.total)}
-                  </p>
-                </div>
-              </button>
-            ))}
+                  {tasks.map((s) => (
+                    <button key={s.id} onClick={() => toggle(s.id, !s.done)} disabled={update.isPending} className={cn("group flex w-full items-start gap-4 rounded-2xl p-4 text-left transition-colors hover:bg-muted/60", s.done && "opacity-80")} data-testid={`checkbox-step-${s.id}`}>
+                      <span className={cn("mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 transition-all", s.done ? "border-cardinal bg-cardinal text-gold" : "border-input group-hover:border-cardinal")}>
+                        {s.done && <Check className="h-4 w-4" strokeWidth={3} />}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-[11px] uppercase tracking-wider text-cardinal">{s.stage}</span>
+                          <Tag tone={s.done ? "gold" : "muted"}>{s.done ? "Done" : "Not yet"}</Tag>
+                          {isOptionalTask(s) && <Tag tone="muted">Optional</Tag>}
+                        </div>
+                        <p className={cn("mt-1 font-semibold", s.done && "line-through decoration-gold decoration-2")}>{s.title}</p>
+                        <p className="mt-0.5 text-sm text-muted-foreground">{s.description}</p>
+                        <p className="mt-1 font-mono text-[11px] text-muted-foreground" data-testid={`text-alumni-rate-${s.id}`}>
+                          {s.category === "advice" ? "Personal advice from a Trojan; not an alumni rate." : alumniRateLabel(s.count, s.total)}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </section>
+              );
+            })}
           </div>
         </div>
       )}

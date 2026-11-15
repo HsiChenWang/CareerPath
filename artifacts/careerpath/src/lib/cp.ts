@@ -67,6 +67,23 @@ export function alumniRateLabel(count: number, total: number): string {
   return `${percentOfRelatedAlumni(count, total)}% of related alumni did this`;
 }
 
+export const TASK_LIST_CATEGORIES = ["Courses", "Club Experiences", "Internships", "Case Competitions", "Certificates"] as const;
+export type TaskListCategory = (typeof TASK_LIST_CATEGORIES)[number];
+
+export function isOptionalTask(step: { category: string }): boolean {
+  return step.category === "case-competition" || step.category === "certificate";
+}
+
+export function taskListCategory(step: { id: string; category: string }): TaskListCategory {
+  if (step.id.endsWith("-leadership")) return "Club Experiences";
+  if (step.category === "course" || step.category === "skill") return "Courses";
+  if (step.category === "internship" || step.category === "growth") return "Internships";
+  if (step.category === "transition") return step.id.endsWith("-first-job") ? "Internships" : "Club Experiences";
+  if (step.category === "case-competition") return "Case Competitions";
+  if (step.category === "certificate") return "Certificates";
+  return "Club Experiences";
+}
+
 export const SCHOOLS = ["Marshall", "Viterbi", "Dornsife", "Annenberg", "Rossier", "Cinematic Arts", "Thornton", "Other"];
 export const LEVELS = ["Undergrad", "Master's", "PhD"];
 
