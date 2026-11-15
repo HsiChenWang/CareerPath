@@ -7,14 +7,14 @@ import { CareerWorkflowProgress } from "@/components/career-workflow";
 import { CardSkeletons, EmptyBlock, ErrorBlock, PageHeader, Tag } from "@/components/bits";
 import { useCoach } from "@/components/coach";
 import { useToast } from "@/hooks/use-toast";
-import { errMsg, percentOfRelatedAlumni } from "@/lib/cp";
+import { alumniRateLabel, errMsg } from "@/lib/cp";
 import { cn } from "@/lib/utils";
 
 export default function MyGap() {
   const qc = useQueryClient();
   const { toast } = useToast();
   const { ask } = useCoach();
-  const q = useGetGap();
+  const q = useGetGap({ query: { refetchOnMount: "always" } });
   const update = useUpdateGapStep();
   const gap = q.data;
 
@@ -75,7 +75,9 @@ export default function MyGap() {
                   </div>
                   <p className={cn("mt-1 font-semibold", s.done && "line-through decoration-gold decoration-2")}>{s.title}</p>
                   <p className="mt-0.5 text-sm text-muted-foreground">{s.description}</p>
-                  <p className="mt-1 font-mono text-[11px] text-muted-foreground" data-testid={`text-alumni-rate-${s.id}`}>{percentOfRelatedAlumni(s.count, s.total)}% of related alumni did this</p>
+                  <p className="mt-1 font-mono text-[11px] text-muted-foreground" data-testid={`text-alumni-rate-${s.id}`}>
+                    {s.category === "advice" ? "Personal advice from a Trojan; not an alumni rate." : alumniRateLabel(s.count, s.total)}
+                  </p>
                 </div>
               </button>
             ))}

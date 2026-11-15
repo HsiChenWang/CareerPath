@@ -7,12 +7,27 @@ import { z } from "zod";
 
 const matchCache = new Map<string, { at: number; people: Person[] }>();
 const words = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+export const ROADMAP_VERSION = 2;
+
 function roleMatches(actual: string, goal: string) {
   if (!words(actual) || !words(goal)) return false;
   const aliases: Record<string, string> = { pm: "product manager", swe: "software engineer", ib: "investment banking", "software engineering": "software engineer", "product management": "product manager", "investment banker": "investment banking", consulting: "consultant", marketing: "marketing" };
   const g = aliases[words(goal)] ?? words(goal);
   return words(actual).includes(g) || g.includes(words(actual));
 }
+
+function careerFamily(value: string) {
+  const text = words(value);
+  if (/\b(product|apm|founder|startup)\b/.test(text)) return "product";
+  if (/\b(investment|banking|finance|banker|financial|consultant|consulting|strategy|marketing|business analyst|program director)\b/.test(text)) return "business";
+  if (/\b(research|scientist|researcher)\b/.test(text)) return "research";
+  if (/\b(software|developer|swe|programmer|robotics|hardware|game|engineer|engineering|data|technology|technologist)\b/.test(text)) return "technology";
+  if (/\b(design|ux|creative|film|producer|media|music|communication|content)\b/.test(text)) return "creative";
+  if (/\b(education|teacher|learning)\b/.test(text)) return "education";
+  if (/\b(climate|environment|sustainability)\b/.test(text)) return "climate";
+  return null;
+}
+
 export async function rankedPeople(userRow: PersonRow, kind: string, search = "", school = "", company = "") {
   const user = publicPerson(userRow);
   const all = await db.select().from(peopleTable).where(eq(peopleTable.role, kind === "peers" ? "student" : "alumni"));
@@ -54,25 +69,42 @@ export async function rankedPeople(userRow: PersonRow, kind: string, search = ""
 }
 function commonSteps(alumni: Person[], role: string): PathStep[] {
   if (!alumni.length) return [];
-  const rate = (count: number, total: number) => total > 0 ? Math.round((count / total) * 100) : 0;
-  const top = (arrays: string[][]) => {
+  const ranked = (arrays: string[][]) => {
     const counts = new Map<string, number>();
     for (const array of arrays) for (const s of new Set(array)) counts.set(s, (counts.get(s) ?? 0) + 1);
-    return [...counts].sort((a, b) => b[1] - a[1])[0] ?? ["", 0] as [string, number];
+    return [...counts].sort((a, b) => b[1] - a[1]);
   };
-  const [club, clubCount] = top(alumni.map(x => x.clubs));
-  const [course, courseCount] = top(alumni.map(x => x.courses));
-  const [skill, skillCount] = top(alumni.map(x => x.skills));
+  const clubs = ranked(alumni.map(x => x.clubs));
+  const courses = ranked(alumni.map(x => x.courses));
+  const skills = ranked(alumni.map(x => x.skills));
+  const [club = "", clubCount = 0] = clubs[0] ?? [];
+  const [course = "", courseCount = 0] = courses[0] ?? [];
+  const [nextCourse = "", nextCourseCount = 0] = courses[1] ?? [];
+  const [skill = "", skillCount = 0] = skills[0] ?? [];
   const events = (category: string) => alumni.filter(x => x.timeline.some(t => t.category === category)).length;
+  const timelineCount = (test: RegExp) => alumni.filter(x => x.timeline.some(t => test.test(`${t.title} ${t.detail}`))).length;
+  const leadershipCount = alumni.filter(x => x.skills.some(s => words(s) === "leadership")).length;
+  const internshipBridgeCount = alumni.filter(x => x.timeline.some(t => t.category === "first-job" && /converted an internship/i.test(t.detail))).length;
+  const alumniConversationCount = alumni.filter(x => x.timeline.some(t => t.category === "first-job" && /usc alumni conversations/i.test(t.detail))).length;
   const prefix = words(role).replaceAll(" ", "-");
   const total = alumni.length;
+  const foundationCourse = course || "a foundational course for your goal";
+  const followupCourse = nextCourse || "a second role-relevant course";
+  const community = club || "a career-related student community";
+  const specialty = skill || "a role-specific skill";
   return [
-    { id: `${prefix}-club`, stage: "Freshman year", title: `Find your community: ${club}`, description: `Join peers, work on projects, and build early relationships. ${rate(clubCount, total)}% of related alumni joined ${club}.`, count: clubCount, total, category: "club", keywords: [club] },
-    { id: `${prefix}-course`, stage: "Freshman → sophomore", title: course, description: `${rate(courseCount, total)}% of related alumni completed this foundation before progressing to advanced work.`, count: courseCount, total, category: "course", keywords: [course] },
-    { id: `${prefix}-project`, stage: "Sophomore year", title: "Get hands-on project or research experience", description: "Apply classroom skills through a student-led project, lab, or research role.", count: events("project"), total, category: "project", keywords: ["research", "project", "built", "assistant"] },
-    { id: `${prefix}-internship`, stage: "Junior summer", title: "Complete a relevant summer internship", description: "Develop real-world skills with a team; ask about return offers and mentorship.", count: events("internship"), total, category: "internship", keywords: ["intern", "summer analyst"] },
-    { id: `${prefix}-skill`, stage: "Junior → senior", title: `Build confidence with ${skill}`, description: `${rate(skillCount, total)}% of related alumni list ${skill} among the skills they developed along the way.`, count: skillCount, total, category: "skill", keywords: [skill] },
-    { id: `${prefix}-first-job`, stage: "First job → your goal", title: `Build toward ${role}`, description: "Use your first full-time role to deepen a specialty, seek feedback, and build relationships.", count: events("first-job"), total, category: "first-job", keywords: [role] },
+    { id: `${prefix}-club`, stage: "Explore", title: `Join ${community}`, description: "Attend an event, meet potential collaborators, and choose one way to contribute this semester.", count: clubCount, total, category: "club", keywords: club ? [club] : [] },
+    { id: `${prefix}-course`, stage: "Build foundations", title: `Complete ${foundationCourse}`, description: "Use the course to strengthen a foundation that appears in related alumni profiles; save one project or assignment as evidence.", count: courseCount, total, category: "course", keywords: course ? [course] : [] },
+    { id: `${prefix}-course-advanced`, stage: "Build foundations", title: `Add ${followupCourse} to your plan`, description: "Choose a second course that deepens your toolkit, then connect its work to a practical project.", count: nextCourseCount, total, category: "course", keywords: nextCourse ? [nextCourse] : [] },
+    { id: `${prefix}-project`, stage: "Build evidence", title: "Ship a student-led project", description: "Set a small scope, build with a team, and write down what you made and what changed because of it.", count: timelineCount(/student project/i), total, category: "project", keywords: ["student project", "project"] },
+    { id: `${prefix}-research`, stage: "Build evidence", title: "Try a research or lab experience", description: "Ask a faculty member or lab about a small research task where you can learn by doing.", count: timelineCount(/undergraduate research|research assistant|research role/i), total, category: "research", keywords: ["undergraduate research", "research assistant", "lab"] },
+    { id: `${prefix}-skill`, stage: "Build evidence", title: `Practice ${specialty}`, description: "Pick one concrete exercise or project that lets you demonstrate this commonly used skill.", count: skillCount, total, category: "skill", keywords: skill ? [skill] : [] },
+    { id: `${prefix}-leadership`, stage: "Build evidence", title: "Lead one small initiative", description: "Take ownership of a bounded project, coordinate the people involved, and record the result.", count: leadershipCount, total, category: "skill", keywords: ["leadership"] },
+    { id: `${prefix}-internship`, stage: "Gain experience", title: "Complete a relevant internship", description: "Apply your skills with a team; ask for feedback and keep a record of your contributions.", count: events("internship"), total, category: "internship", keywords: ["intern", "summer analyst"] },
+    { id: `${prefix}-internship-presentation`, stage: "Gain experience", title: "Present a clear outcome from your internship", description: "Summarize the problem, your contribution, and the result in a short story you can use in interviews.", count: timelineCount(/presented work to a cross-functional team/i), total, category: "internship", keywords: ["presented work", "cross-functional"] },
+    { id: `${prefix}-first-job`, stage: "Move toward your goal", title: "Use an internship as a bridge to your first role", description: "Ask about return opportunities and translate your internship work into evidence for your next application.", count: internshipBridgeCount, total, category: "transition", keywords: [] },
+    { id: `${prefix}-first-role-network`, stage: "Move toward your goal", title: "Use Trojan conversations to find your first role", description: "Request a short informational conversation, ask for one practical next step, and follow up with what you learned.", count: alumniConversationCount, total, category: "transition", keywords: [] },
+    { id: `${prefix}-career-growth`, stage: "Grow into the goal", title: `Build toward ${role} in your first role`, description: "Choose a specialty, seek regular feedback, and take on a small initiative that moves you closer to the work you want.", count: events("growth"), total, category: "growth", keywords: [] },
   ];
 }
 export function gapFor(user: PersonRow): Gap {
@@ -88,6 +120,8 @@ export function gapFor(user: PersonRow): Gap {
       case "course": source = p.courses; break;
       case "skill": source = p.skills; break;
       case "first-job": source = [p.currentRole || "", ...p.experience.filter(x => !/intern|research|assistant|project/i.test(x))]; break;
+      case "transition":
+      case "growth": source = []; break;
       default: source = p.experience;
     }
     const inferred = step.keywords.some(k => source.some(s => words(s).includes(words(k))));
@@ -110,25 +144,40 @@ export function gapFor(user: PersonRow): Gap {
 }
 export async function makePath(user: PersonRow, role: string, company = "") {
   const all = await db.select().from(peopleTable).where(eq(peopleTable.role, "alumni"));
-  const alumni = all.map(publicPerson).filter(p =>
-    (roleMatches(p.currentRole || "", role) || p.timeline.some(t => roleMatches(t.title, role)))
-    && (!company || words(p.company || "").includes(words(company)) || p.timeline.some(t => words(t.title).includes(words(company)))),
+  const family = careerFamily(role);
+  const related = all.map(publicPerson).filter(p => {
+    const exactRole = roleMatches(p.currentRole || "", role) || p.timeline.some(t => roleMatches(t.title, role));
+    const sameFamily = family && (careerFamily(p.currentRole || "") === family || careerFamily(p.outcome || "") === family);
+    return exactRole || sameFamily;
+  });
+  const companyMatch = (p: Person) => !!company && (
+    words(p.company || "").includes(words(company))
+    || p.timeline.some(t => words(t.title).includes(words(company)))
+  );
+  const exactMatch = (p: Person) => roleMatches(p.currentRole || "", role) || p.timeline.some(t => roleMatches(t.title, role));
+  const companyMatches = related.filter(companyMatch).length;
+  const alumni = related.sort((a, b) =>
+    Number(companyMatch(b)) - Number(companyMatch(a))
+    || Number(exactMatch(b)) - Number(exactMatch(a))
+    || a.name.localeCompare(b.name),
   );
   const steps = commonSteps(alumni, role);
+  const cohortDescription = family ? `the related ${family} career family` : `roles related to ${role}`;
   const baseline: CareerPath = {
     role, company, total: alumni.length, alumni, steps, fallback: true,
-    summary: alumni.length ? `Across ${alumni.length} sample Trojans who reached ${role}${company ? ` at ${company}` : ""}, the recurring pattern is community involvement, foundational coursework, hands-on work and a relevant internship. These are common steps, not a guaranteed or mandatory route.` : `No sample alumni match ${role}${company ? ` at ${company}` : ""} yet. Try a broader role or one of our sample paths: Product Manager at Google, Investment Banking Analyst at Goldman Sachs, Consultant at McKinsey, Software Engineer at Apple, or Marketing at Disney.`,
+    summary: alumni.length ? `Across ${alumni.length} sample Trojans in ${cohortDescription}, common themes include community, coursework, hands-on work, and relevant experience. The steps are descriptive, not mandatory or guaranteed.` : `No sample alumni match ${role}${company ? ` at ${company}` : ""} yet. Try a broader role or one of our sample paths: Product Manager at Google, Investment Banking Analyst at Goldman Sachs, Consultant at McKinsey, Software Engineer at Apple, or Marketing at Disney.`,
   };
   let result = { value: { summary: baseline.summary, actions: [] as string[] }, fallback: true };
   if (alumni.length) {
     const schema = z.object({ summary: z.string(), actions: z.array(z.string()).length(3) });
-    result = await aiJson("Analyze alumni year-by-year paths. JSON {summary:string,actions:[3 concrete personalized next steps for THIS semester]}. Summarize actual common patterns and when they happen, no invented counts. Actions must address the student's gaps and include a specific achievable first move. Paths are descriptive, not guarantees.", { student: publicPerson(user), goal: { role, company }, evidence: steps, alumni }, x => schema.parse(x), result.value);
+    result = await aiJson("Analyze the supplied cohort's year-by-year paths. JSON {summary:string,actions:[3 concrete personalized next steps for THIS semester]}. Summarize actual common patterns and when they happen, no invented counts. Some alumni may have adjacent roles; never imply everyone reached the exact goal company. Actions must address the student's gaps and include a specific achievable first move. Paths are descriptive, not guarantees.", { student: publicPerson(user), goal: { role, company, relatedCareerFamily: family, companySpecificMatches: companyMatches, totalRelatedAlumni: alumni.length }, evidence: steps, alumni }, x => schema.parse(x), result.value);
   }
-  const path = { ...baseline, summary: result.value.summary, fallback: result.fallback };
+  const companyNote = company ? ` Rates use this broader related-role sample; ${companyMatches} company-specific match${companyMatches === 1 ? "" : "es"} found, prioritized in the alumni list.` : "";
+  const path = { ...baseline, summary: `${result.value.summary}${companyNote}`, fallback: result.fallback };
   const p = publicPerson(user);
   await db.update(peopleTable).set({
     profile: { ...(user.profile as object), dreamRole: role, dreamCompany: company },
-    path: { ...path, actions: result.value.actions },
+    path: { ...path, actions: result.value.actions, roadmapVersion: ROADMAP_VERSION },
   }).where(eq(peopleTable.id, p.id));
   return path;
 }

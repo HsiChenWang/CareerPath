@@ -10,12 +10,15 @@ import { AiThinking, EmptyBlock, ErrorBlock, PageHeader, PersonAvatar, Tag } fro
 import { useCoach } from "@/components/coach";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
-import { errMsg, percentOfRelatedAlumni, useMe, PATH_KEY } from "@/lib/cp";
+import { alumniRateLabel, errMsg, percentOfRelatedAlumni, useMe, PATH_KEY } from "@/lib/cp";
 
+const PATH_CACHE_VERSION = 2;
 function loadStored(): CareerPath | null {
   try {
     const raw = sessionStorage.getItem(PATH_KEY);
-    return raw ? (JSON.parse(raw) as CareerPath) : null;
+    if (!raw) return null;
+    const cached = JSON.parse(raw) as { version?: number; path?: CareerPath };
+    return cached.version === PATH_CACHE_VERSION ? cached.path ?? null : null;
   } catch {
     return null;
   }
@@ -27,11 +30,13 @@ export default function PathFinder() {
   const qc = useQueryClient();
   const { setFocus } = useCoach();
   const params = new URLSearchParams(search);
+  const requestedRole = params.get("role");
+  const requestedCompany = params.get("company") || "";
   const [role, setRole] = useState(params.get("role") || user?.dreamRole || "");
   const [company, setCompany] = useState(params.get("company") || user?.dreamCompany || "");
   const [path, setPath] = useState<CareerPath | null>(() => (params.get("role") ? null : loadStored()));
   const find = useFindPath();
-  const gapQuery = useGetGap({ query: { enabled: !!path, queryKey: getGetGapQueryKey() } });
+  const gapQuery = useGetGap({ query: { enabled: !!path, queryKey: getGetGapQueryKey(), refetchOnMount: "always" } });
   const updateStep = useUpdateGapStep();
   const { toast } = useToast();
   const findRef = useRef(find.mutate);
@@ -43,7 +48,7 @@ export default function PathFinder() {
     findRef.current({ data: { role: r.trim(), company: c.trim() || undefined } }, {
       onSuccess: (p) => {
         setPath(p);
-        sessionStorage.setItem(PATH_KEY, JSON.stringify(p));
+        sessionStorage.setItem(PATH_KEY, JSON.stringify({ version: PATH_CACHE_VERSION, path: p }));
         qc.invalidateQueries({ queryKey: getGetSessionQueryKey() });
         qc.invalidateQueries({ queryKey: getGetGapQueryKey() });
       },
@@ -52,12 +57,13 @@ export default function PathFinder() {
 
   useEffect(() => {
     if (ran.current) return;
-    ran.current = true;
-    const r = params.get("role");
-    if (r) run(r, params.get("company") || "");
-    else if (!path && user?.dreamRole) run(user.dreamRole, user.dreamCompany || "");
+    const initialRole = requestedRole || (!path ? user?.dreamRole : undefined);
+    if (initialRole) {
+      ran.current = true;
+      run(initialRole, requestedRole ? requestedCompany : user?.dreamCompany || "");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [requestedRole, requestedCompany, path, user?.dreamRole, user?.dreamCompany]);
 
   useEffect(() => {
     setFocus({ goal: path ? `${path.role}${path.company ? ` at ${path.company}` : ""}` : undefined, label: path ? `the path to ${path.role}` : undefined });
@@ -73,7 +79,7 @@ export default function PathFinder() {
     onError: (error) => toast({ title: "Could not update this track", description: errMsg(error), variant: "destructive" }),
   });
   const gap = gapQuery.data;
-  const matchedTracks = gap?.steps.filter((step) => step.done).length ?? 0;
+  const matchedTracks = gap?.steps.filter((step) => step.category !== "advice" && step.done).length ?? 0;
 
   return (
     <Page>
@@ -97,17 +103,18 @@ export default function PathFinder() {
         <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr]">
           <div>
             <div className="rise rounded-[1.75rem] bg-cardinal p-7 text-white md:p-9">
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold" data-testid="text-based-on">Based on {path.total} Trojans</p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold" data-testid="text-based-on">Based on {path.total} related alumni</p>
               <h2 className="mt-2 font-display text-3xl md:text-4xl" data-testid="text-path-title">{path.role}{path.company ? ` at ${path.company}` : ""}</h2>
               <p className="mt-4 text-white/85 md:text-lg" data-testid="text-path-summary">{path.summary}</p>
+              {path.total < 5 && <p className="mt-3 text-xs text-white/70">The related-alumni sample is small, so step percentages are hidden rather than overstated.</p>}
               {path.fallback && <p className="mt-3 text-xs text-white/60">Built from pattern counts while the AI rests. The numbers are real.</p>}
             </div>
             <section className="mt-8" aria-labelledby="track-list-title">
               <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cardinal">Your roadmap</p>
-                  <h3 id="track-list-title" className="mt-1 font-display text-2xl">Track list</h3>
-                  <p className="mt-1 max-w-xl text-sm text-muted-foreground">Compare each step with your saved profile. Resume details count after you import and save them in Profile.</p>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cardinal">Level 2 roadmap</p>
+                  <h3 id="track-list-title" className="mt-1 font-display text-2xl">Detailed track list</h3>
+                  <p className="mt-1 max-w-xl text-sm text-muted-foreground">Each stage is broken into concrete actions. Compare them with your saved profile; resume details count after you import and save them in Profile.</p>
                 </div>
                 {gap && <p className="text-xs font-medium text-muted-foreground" data-testid="text-profile-track-match">{matchedTracks} track{matchedTracks === 1 ? "" : "s"} matched</p>}
               </div>
@@ -146,12 +153,16 @@ export default function PathFinder() {
                               {gapQuery.isError ? "Profile comparison unavailable." : profileStep?.description ?? (gapQuery.isLoading ? "Checking your saved profile…" : "Not found in your saved profile yet.")}
                             </span>
                             {profileStep && <span className="mt-1 block text-xs text-muted-foreground">{done ? "Found in your saved profile or confirmed by you." : "Suggested to build toward this goal."}</span>}
-                            <span className="mt-4 flex items-center gap-3">
-                              <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
-                                <span className="block h-full rounded-full bg-gold transition-all" style={{ width: `${rate}%` }} />
+                            {step.total >= 5 ? (
+                              <span className="mt-4 flex items-center gap-3">
+                                <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
+                                  <span className="block h-full rounded-full bg-gold transition-all" style={{ width: `${rate}%` }} />
+                                </span>
+                                <span className="whitespace-nowrap font-mono text-xs font-semibold" data-testid={`text-alumni-rate-${step.id}`}>{alumniRateLabel(step.count, step.total)}</span>
                               </span>
-                              <span className="whitespace-nowrap font-mono text-xs font-semibold" data-testid={`text-alumni-rate-${step.id}`}>{rate}% of related alumni did this</span>
-                            </span>
+                            ) : (
+                              <span className="mt-4 block font-mono text-xs font-semibold text-muted-foreground" data-testid={`text-alumni-rate-${step.id}`}>{alumniRateLabel(step.count, step.total)}</span>
+                            )}
                           </span>
                         </button>
                       </li>

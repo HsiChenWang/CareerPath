@@ -4,7 +4,7 @@ import { db, peopleTable } from "@workspace/db";
 import { SaveProfileBody, SaveProfileResponse, GetPeopleQueryParams, GetPeopleResponse, GetPersonParams, GetPersonResponse, FindPathBody, FindPathResponse, GetGapResponse, UpdateGapStepParams, UpdateGapStepBody } from "@workspace/api-zod";
 import { requireUser } from "../middlewares/session";
 import { HttpError, isBlocked, personRow, publicPerson, similarity } from "../lib/domain";
-import { gapFor, makePath, rankedPeople } from "../lib/careers";
+import { gapFor, makePath, rankedPeople, ROADMAP_VERSION } from "../lib/careers";
 import { milestoneFollowups } from "../lib/network";
 
 const router: IRouter = Router();
@@ -42,8 +42,11 @@ router.post("/path", async (req, res) => {
 router.get("/gap", async (req, res) => {
   let user = req.cpUser!;
   const p = publicPerson(user);
-  if (!user.path && p.dreamRole) {
-    await makePath(user, p.dreamRole, p.dreamCompany);
+  const storedPath = user.path as { role?: string; company?: string; roadmapVersion?: number } | null;
+  const pathRole = storedPath?.role || p.dreamRole;
+  const pathCompany = storedPath?.company || p.dreamCompany;
+  if (pathRole && storedPath?.roadmapVersion !== ROADMAP_VERSION) {
+    await makePath(user, pathRole, pathCompany);
     user = await personRow(user.id);
   }
   const gap = gapFor(user);
