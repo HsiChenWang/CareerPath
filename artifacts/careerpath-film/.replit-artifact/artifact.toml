@@ -1,0 +1,29 @@
+kind = "video"
+videoAspectRatio = "16:9"
+previewPath = "/careerpath-film/"
+title = "CareerPath Film"
+description = "A short animated overview of CareerPath, an AI-assisted career companion for USC students and alumni."
+version = "1.0.0"
+id = "artifacts/careerpath-film"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/careerpath-film/" ]
+localPort = 22247
+
+[services.development]
+run = "pnpm --filter @workspace/careerpath-film run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/careerpath-film", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/careerpath-film/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22247"
+BASE_PATH = "/careerpath-film/"
