@@ -33,6 +33,13 @@ const alum = {
   ],
 };
 
+const peer = {
+  ...student,
+  id: "student-2",
+  name: "Sarah Chen",
+  photo: "avatars/alumni-01.jpg",
+};
+
 const path = {
   role: "Product Manager",
   company: "Google",
@@ -71,8 +78,8 @@ async function mockCareerApi(page: Page, options: { hasPath?: boolean } = {}) {
       await route.fulfill({ json: { user: student } });
     } else if (url.pathname === "/api/healthz") {
       await route.fulfill({ json: { status: "ok" } });
-    } else if (url.pathname === "/api/people" && url.searchParams.get("kind") === "explore") {
-      await route.fulfill({ json: [alum] });
+    } else if (url.pathname === "/api/people") {
+      await route.fulfill({ json: url.searchParams.get("kind") === "peers" ? [peer] : [alum] });
     } else if (url.pathname === "/api/path" && request.method() === "POST") {
       mappedGoals.push(request.postDataJSON());
       await route.fulfill({ json: { ...path, industry: request.postDataJSON().industry } });
@@ -391,4 +398,14 @@ test("shows mapped career paths as a short quick-read list", async ({ page }) =>
   await expect(quickRead).toContainText("Quick read");
   await expect(quickRead.locator("li")).toHaveCount(Math.min(path.steps.length, 3));
   await expect(quickRead).not.toContainText(path.summary);
+});
+
+test("shows profile photos on peer cards", async ({ page }) => {
+  await mockCareerApi(page);
+  await page.goto("/connect");
+  await page.getByTestId("tab-peers").click();
+
+  const avatar = page.locator('[data-testid="card-person-student-2"] img[data-testid="img-avatar"]');
+  await expect(avatar).toHaveAttribute("src", /avatars\/alumni-01\.jpg$/);
+  await expect(avatar).toBeVisible();
 });

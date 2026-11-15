@@ -14,10 +14,14 @@ export const publicPerson = (row: PersonRow): Person => {
     ? 1
     : Number(row.id.match(/^alum-(\d+)$/)?.[1] ?? 0);
   const portraitNumber = alumniNumber > 0 ? ((alumniNumber - 1) % 12) + 1 : 0;
+  const studentNumber = Number(row.id.match(/^student-(\d+)$/)?.[1] ?? 0);
+  const peerPortraitNumber = studentNumber >= 2 ? ((studentNumber - 2) % 12) + 1 : 0;
   const demoPortrait = row.isDemo && row.role === "alumni" && portraitNumber
     ? `avatars/alumni-${String(portraitNumber).padStart(2, "0")}.jpg`
     : row.isDemo && row.role === "student" && row.id === "alex"
       ? "avatars/student-alex.jpg"
+      : row.isDemo && row.role === "student" && peerPortraitNumber
+        ? `avatars/alumni-${String(peerPortraitNumber).padStart(2, "0")}.jpg`
       : undefined;
   return GetPersonResponse.parse({
     clubs: [], skills: [], interests: [], experience: [], courses: [], timeline: [],
