@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Check, Map, Search } from "lucide-react";
+import { Check, Map, Search } from "lucide-react";
 import { useFindPath, useGetGap, useUpdateGapStep, getGetGapQueryKey, getGetNetworkQueryKey, getGetSessionQueryKey } from "@workspace/api-client-react";
 import type { CareerPath } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
@@ -176,16 +176,6 @@ export default function PathFinder() {
             </section>
           </div>
           <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
-            <Link href="/my-gap" className="group block rounded-[1.75rem] bg-gold p-6 text-ink transition-transform hover:-translate-y-1" data-testid="link-see-gap">
-              <p className="font-mono text-[11px] uppercase tracking-wider">Next</p>
-              <p className="mt-1 font-display text-2xl">See your gap to this path</p>
-              <ArrowRight className="mt-4 h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Link>
-            <div className="rounded-[1.75rem] border bg-card p-6" data-testid="panel-resume-comparison">
-              <p className="font-display text-xl">Compared with your profile</p>
-              <p className="mt-2 text-sm text-muted-foreground">Upload or update your resume in Profile, then save the extracted details to refresh this comparison. The original resume file is not retained.</p>
-              <Link href="/profile" className="mt-4 inline-block text-sm font-semibold text-cardinal hover:underline" data-testid="link-update-resume">Update profile or resume</Link>
-            </div>
             <div className="rounded-[1.75rem] border bg-card p-6">
               <p className="font-display text-xl">The Trojans behind it</p>
               <div className="mt-4 space-y-3">
