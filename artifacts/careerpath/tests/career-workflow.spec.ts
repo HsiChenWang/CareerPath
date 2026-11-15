@@ -86,6 +86,98 @@ async function mockCareerApi(page: Page, options: { hasPath?: boolean } = {}) {
   return mappedGoals;
 }
 
+async function mockMyNetworkApi(page: Page) {
+  let sentMessages = 0;
+  const conversationId = "demo-priya";
+  const draft = "Hi Priya, thanks for sharing your experience. Could I ask you one quick question about product roles?";
+
+  await page.route("**/api/**", async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    if (url.pathname === "/api/auth/me") {
+      await route.fulfill({ json: { user: student } });
+    } else if (url.pathname === "/api/healthz") {
+      await route.fulfill({ json: { status: "ok" } });
+    } else if (url.pathname === "/api/network") {
+      await route.fulfill({ json: {
+        summary: "One follow-up is due.",
+        connections: [],
+        chats: [],
+        followups: [{
+          id: "followup-priya",
+          person: alum,
+          kind: "coffee chat",
+          reason: "Send a thank-you after your conversation.",
+          draft: "Thanks for meeting with me.",
+          dueAt: "2026-11-01T12:00:00.000Z",
+          status: "pending",
+        }],
+        waiting: 0,
+        relationships: 0,
+        now: "2026-11-14T12:00:00.000Z",
+        offsetDays: 0,
+      } });
+    } else if (url.pathname === "/api/conversations" && request.method() === "GET") {
+      await route.fulfill({ json: [{
+        id: conversationId,
+        person: alum,
+        lastMessage: "Thanks for reaching out!",
+        updatedAt: "2026-11-14T12:00:00.000Z",
+        canSend: true,
+        hasReply: true,
+        blocked: false,
+      }] });
+    } else if (url.pathname === `/api/conversations/${conversationId}/messages` && request.method() === "GET") {
+      await route.fulfill({ json: [{
+        id: "message-priya-1",
+        conversationId,
+        senderId: alum.id,
+        text: "Thanks for reaching out!",
+        createdAt: "2026-11-14T11:00:00.000Z",
+      }] });
+    } else if (url.pathname === `/api/conversations/${conversationId}/messages` && request.method() === "POST") {
+      sentMessages += 1;
+      await route.fulfill({ json: {
+        id: "message-alex-1",
+        conversationId,
+        senderId: student.id,
+        text: request.postDataJSON().text,
+        createdAt: "2026-11-14T12:01:00.000Z",
+      } });
+    } else if (url.pathname === "/api/ai" && request.method() === "POST") {
+      const body = request.postDataJSON();
+      await route.fulfill({ json: {
+        text: body.kind === "reply" ? draft : "Explore product roles this week.",
+        suggestions: [],
+        questions: [],
+        actions: body.kind === "weekly" ? ["Explore product roles this week."] : [],
+        fallback: false,
+      } });
+    } else {
+      await route.fulfill({ status: 404, json: { error: `Unexpected API request: ${request.method()} ${url.pathname}` } });
+    }
+  });
+
+  return { sentMessageCount: () => sentMessages, draft };
+}
+
+async function mockProfileApi(page: Page, role: "student" | "alumni") {
+  const profile = role === "alumni"
+    ? { ...alum, school: "", major: "", currentRole: "", company: "", level: "", year: "", gradYear: null }
+    : { ...student, school: "", major: "", level: "", year: "", gradYear: null };
+
+  await page.route("**/api/**", async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname === "/api/auth/me") {
+      await route.fulfill({ json: { user: profile } });
+    } else if (url.pathname === "/api/healthz") {
+      await route.fulfill({ json: { status: "ok" } });
+    } else {
+      await route.fulfill({ status: 404, json: { error: `Unexpected API request: ${url.pathname}` } });
+    }
+  });
+}
+
 async function expectCurrentStep(page: Page, label: string, step: number) {
   await expect(page.getByTestId("text-workflow-progress")).toHaveText(`Step ${step} of 3`);
   await expect(page.locator('[aria-current="step"]')).toContainText(label);
@@ -128,4 +220,51 @@ test("returns from an unmapped My Gap to Path Finder with the right step active"
   await expect(page).toHaveURL(/\/path-finder$/);
   await expectCurrentStep(page, "Path Finder", 2);
   await expect(page.getByText("No path mapped yet")).toBeVisible();
+});
+
+test("keeps My Network focused and AI drafts unsent until the student sends them", async ({ page }) => {
+  const api = await mockMyNetworkApi(page);
+
+  await page.goto("/my-network");
+  await expect(page.getByTestId("list-weekly-suggestions")).toContainText("Follow up with Priya");
+  await expect(page.getByTestId("panel-upcoming-coffee")).toBeVisible();
+  await expect(page.getByTestId("panel-message-session")).toBeVisible();
+  for (const removedHeading of ["Follow-ups due", "Waiting for reply", "Relationships", "Hit a milestone?", "Everyone"]) {
+    await expect(page.getByText(removedHeading, { exact: true })).toHaveCount(0);
+  }
+
+  await page.getByTestId("button-weekly-coach").click();
+  await expect(page.getByTestId("list-weekly-suggestions")).toContainText("Explore product roles this week.");
+  await expect(page.getByTestId("list-weekly-suggestions")).toContainText("Follow up with Priya");
+
+  await page.getByTestId("button-session-ai-draft").click();
+  const composer = page.getByTestId("input-session-message");
+  await expect(composer).toHaveValue(api.draft);
+  expect(api.sentMessageCount()).toBe(0);
+
+  await page.getByTestId("button-session-send").click();
+  await expect.poll(api.sentMessageCount).toBe(1);
+});
+
+test("fills student and alumni profile fields with clearly labeled LinkedIn demo data", async ({ browser }) => {
+  for (const role of ["student", "alumni"] as const) {
+    const page = await browser.newPage();
+    await mockProfileApi(page, role);
+    await page.goto("/profile");
+    await page.getByTestId("button-linkedin-autofill").click();
+
+    await expect(page.getByText("Uses sample profile details only.", { exact: false })).toBeVisible();
+    await expect(page.getByTestId("input-major")).toHaveValue("Computer Science");
+    await expect(page.getByTestId("select-school")).toContainText("Viterbi");
+
+    if (role === "student") {
+      await expect(page.getByTestId("input-year")).toHaveValue("Junior");
+      await expect(page.getByTestId("input-grad-year")).toHaveValue("2027");
+    } else {
+      await expect(page.getByTestId("input-current-role")).toHaveValue("Product Manager");
+      await expect(page.getByTestId("input-company")).toHaveValue("Google");
+    }
+
+    await page.close();
+  }
 });

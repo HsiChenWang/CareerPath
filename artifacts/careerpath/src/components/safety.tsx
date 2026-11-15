@@ -23,7 +23,7 @@ export function SafetyMenu({ personId, name, blocked }: { personId: string; name
         qc.invalidateQueries({ queryKey: getGetConversationsQueryKey() });
         qc.invalidateQueries({ queryKey: getGetPersonQueryKey(personId) });
         qc.invalidateQueries({ queryKey: getGetPeopleQueryKey() });
-        toast({ title: action === "report" ? "Report received" : action === "block" ? `${name} is blocked` : `${name} is unblocked`, description: action === "report" ? "Our team will review it. Thank you for keeping CareerPath safe." : undefined });
+        toast({ title: action === "report" ? "Report received" : action === "block" ? `${name} is blocked` : `${name} is unblocked`, description: action === "report" ? "Our team will review it. Thank you for keeping NextStepSC safe." : undefined });
         setReporting(false); setBlocking(false); setReason("");
       },
       onError: (e) => toast({ title: "That did not go through", description: errMsg(e), variant: "destructive" }),

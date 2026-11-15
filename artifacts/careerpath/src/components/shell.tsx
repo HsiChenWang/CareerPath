@@ -32,7 +32,7 @@ export function Logo({ light }: { light?: boolean }) {
         </svg>
       </span>
       <span className={cn("font-display text-xl font-semibold tracking-tight", light ? "text-white" : "text-ink")}>
-        Career<span className={light ? "text-gold" : "text-cardinal"}>Path</span>
+        NextStep<span className={light ? "text-gold" : "text-cardinal"}>SC</span>
       </span>
     </span>
   );

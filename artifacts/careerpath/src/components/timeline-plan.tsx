@@ -119,7 +119,7 @@ export function TimelinePlan({
         <div aria-hidden="true" className="absolute bottom-0 right-28 h-20 w-20 rotate-45 border border-white/10" />
         <div className="relative flex flex-wrap items-end justify-between gap-5">
           <div className="max-w-xl">
-            <p className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-gold"><CalendarDays className="h-4 w-4" />CareerPath roadmap</p>
+            <p className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-gold"><CalendarDays className="h-4 w-4" />NextStepSC roadmap</p>
             <h3 id="timeline-plan-title" className="mt-2 font-display text-3xl leading-tight md:text-4xl">Your next chapters</h3>
             <p className="mt-2 text-sm text-white/75">A semester plan built around your profile and today’s date.</p>
           </div>

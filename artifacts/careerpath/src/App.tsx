@@ -67,8 +67,8 @@ function Shell() {
       '/requests': 'Coffee chat requests', '/upcoming-chats': 'Your coffee chats', '/profile': 'Your profile',
     };
     const page = titles[location] || (location.startsWith('/people/') ? 'Trojan profile' : 'Page not found');
-    const title = `${page} · CareerPath`;
-    const description = `${page} with CareerPath, the AI career companion for USC students and alumni. Explore sample Trojan journeys and build meaningful connections.`;
+    const title = `${page} · NextStepSC`;
+    const description = `${page} with NextStepSC, the AI career companion for USC students and alumni. Explore sample Trojan journeys and build meaningful connections.`;
     document.title = title;
     for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) document.querySelector(selector)?.setAttribute('content', description);
     for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) document.querySelector(selector)?.setAttribute('content', title);

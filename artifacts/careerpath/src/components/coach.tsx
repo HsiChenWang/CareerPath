@@ -89,7 +89,7 @@ export function CoachProvider({ children }: { children: ReactNode }) {
             <span className="grid h-8 w-8 place-items-center rounded-full bg-gold text-cardinal transition-transform group-hover:rotate-12">
               <Sparkles className="h-4 w-4" />
             </span>
-            <span className="hidden sm:inline">Ask CareerPath AI</span>
+            <span className="hidden sm:inline">Ask NextStepSC AI</span>
             <span className="sm:hidden">Ask AI</span>
           </button>
           <Sheet open={open} onOpenChange={setOpen}>
@@ -99,7 +99,7 @@ export function CoachProvider({ children }: { children: ReactNode }) {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-gold">Your career coach</p>
-                    <SheetTitle className="mt-1 font-display text-2xl text-white">Ask CareerPath AI</SheetTitle>
+                    <SheetTitle className="mt-1 font-display text-2xl text-white">Ask NextStepSC AI</SheetTitle>
                     <SheetDescription className="mt-1 text-sm text-white/75">
                       {focus.label ? `Looking at ${focus.label} with you.` : `Knows your profile and this page.`}
                     </SheetDescription>

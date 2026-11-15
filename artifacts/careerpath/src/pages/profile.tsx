@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText, Sparkles, UploadCloud, Wand2, X } from "lucide-react";
+import { FileText, Linkedin, Sparkles, UploadCloud, Wand2, X } from "lucide-react";
 import { useAskAi, useSaveProfile, useUploadResume, getGetSessionQueryKey, getGetGapQueryKey, getGetPeopleQueryKey } from "@workspace/api-client-react";
 import type { AiResult, ProfileInput, Session } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
@@ -93,6 +93,59 @@ export default function Profile() {
     return true;
   };
 
+  const autofillLinkedInDemo = () => {
+    const demo: Partial<ProfileInput> = alum ? {
+      school: "Viterbi",
+      major: "Computer Science",
+      level: "Undergrad",
+      year: "Alumni",
+      gradYear: 2021,
+      clubs: ["Hack SC"],
+      experience: ["Associate Product Manager at Google"],
+      skills: ["Product strategy", "SQL", "Roadmapping"],
+      courses: ["CSCI 201"],
+      interests: ["Product management", "Mentorship"],
+      currentRole: "Product Manager",
+      company: "Google",
+      helpTopics: ["Product interviews", "Breaking into product"],
+      bio: "USC Viterbi alum who enjoys helping students explore product careers.",
+    } : {
+      school: "Viterbi",
+      major: "Computer Science",
+      level: "Undergrad",
+      year: "Junior",
+      gradYear: 2027,
+      clubs: ["Hack SC", "LavaLab"],
+      experience: ["Product Intern at Trojan Tech"],
+      skills: ["Python", "SQL", "Product thinking"],
+      courses: ["CSCI 201"],
+      interests: ["Product management", "AI"],
+      bio: "USC computer science student exploring product management and AI.",
+    };
+    const next = { ...form } as Record<string, unknown>;
+    const changed = new Set<string>();
+    for (const [key, value] of Object.entries(demo)) {
+      const current = next[key];
+      if (Array.isArray(value)) {
+        const existing = Array.isArray(current) ? current as string[] : [];
+        const merged = Array.from(new Set([...existing, ...value]));
+        if (merged.length > existing.length) {
+          next[key] = merged;
+          changed.add(key);
+        }
+      } else if (value !== undefined && (current === undefined || current === null || current === "")) {
+        next[key] = value;
+        changed.add(key);
+      }
+    }
+    setForm(next as ProfileInput);
+    setFilled(changed);
+    toast({
+      title: "Demo LinkedIn details added",
+      description: changed.size ? "Sample details filled empty fields. Review them before saving." : "Your profile already has these details.",
+    });
+  };
+
   const autofill = () => resumeAi.mutate({ data: { kind: "resume", text: resume } }, {
     onSuccess: applyResumeProfile,
     onError: (e) => toast({ title: "Resume reader is resting", description: errMsg(e), variant: "destructive" }),
@@ -171,7 +224,16 @@ export default function Profile() {
             <FileText className="absolute -right-6 -top-6 h-36 w-36 text-white/5" />
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold">Shortcut</p>
             <h2 className="mt-1 font-display text-2xl">Upload your resume. We will do the typing.</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-paper/70">Choose a PDF, DOCX, or plain-text file up to 4 MB. We remove email addresses and phone numbers before asking AI to suggest your profile details. CareerPath does not save your file; review every suggestion before saving.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-paper/70">Choose a PDF, DOCX, or plain-text file up to 4 MB. We remove email addresses and phone numbers before asking AI to suggest your profile details. NextStepSC does not save your file; review every suggestion before saving.</p>
+            <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="flex items-center gap-2 text-sm font-semibold text-paper"><Linkedin className="h-4 w-4 text-[#70b5f9]" />LinkedIn autofill demo</p>
+                <p className="mt-1 text-xs leading-relaxed text-paper/60">Uses sample profile details only. It does not connect to LinkedIn or fetch account data.</p>
+              </div>
+              <button type="button" onClick={autofillLinkedInDemo} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-white/25 px-4 py-2.5 text-sm font-semibold text-paper transition-colors hover:bg-white/10" data-testid="button-linkedin-autofill">
+                <Linkedin className="h-4 w-4 text-[#70b5f9]" />Autofill profile
+              </button>
+            </div>
             <input
               ref={resumeFileInput}
               type="file"

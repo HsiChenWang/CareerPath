@@ -1,8 +1,8 @@
-# CareerPath
+# NextStepSC
 
-CareerPath is an AI-assisted career companion for USC students and alumni. It helps students explore sample career journeys, identify skills to build, and connect with alumni for advice and coffee chats.
+NextStepSC is an AI-assisted career companion for USC students and alumni. It helps students explore sample career journeys, identify skills to build, and connect with alumni for advice and coffee chats.
 
-> CareerPath is an independent demo, not an official USC service. Alumni profiles and career histories shown in the demo are fictional sample data and are not verified outcomes.
+> NextStepSC is an independent demo, not an official USC service. Alumni profiles and career histories shown in the demo are fictional sample data and are not verified outcomes.
 
 ## Features
 
@@ -13,13 +13,13 @@ CareerPath is an AI-assisted career companion for USC students and alumni. It he
 - Upload a resume to suggest profile details, then review and save those details yourself.
 - Use the app as a student or an alum with the demo accounts on the sign-in page.
 
-AI-generated text is a draft for the user to review. CareerPath does not send AI-written messages automatically.
+AI-generated text is a draft for the user to review. NextStepSC does not send AI-written messages automatically.
 
 ## Resume uploads
 
 The Profile page accepts **PDF**, **DOCX**, and **TXT** files up to **4 MB**. PDFs are limited to 8 pages. The importer needs selectable text; scanned, image-only PDFs are not supported.
 
-Uploaded files are processed in memory and are not saved by CareerPath. Email addresses and phone numbers are removed from extracted text before it is sent to the AI provider for profile suggestions. Other resume text is still processed by that provider. Review suggested fields and save your profile when you are ready.
+Uploaded files are processed in memory and are not saved by NextStepSC. Email addresses and phone numbers are removed from extracted text before it is sent to the AI provider for profile suggestions. Other resume text is still processed by that provider. Review suggested fields and save your profile when you are ready.
 
 ## Technology
 

@@ -45,7 +45,7 @@ export default function Landing() {
           <Logo />
           <div className="flex items-center gap-2">
             {user ? (
-              <Link href={homeFor(user)} className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper" data-testid="link-open-app">Open CareerPath</Link>
+              <Link href={homeFor(user)} className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper" data-testid="link-open-app">Open NextStepSC</Link>
             ) : (
               <>
                 <Link href="/login" className="rounded-full px-4 py-2.5 text-sm font-medium hover:bg-muted" data-testid="link-login">Log in</Link>
@@ -115,7 +115,7 @@ export default function Landing() {
           </h2>
           <div className="space-y-5 text-lg text-foreground/75">
             <p>A profile says "Product Manager, Google." It does not say she was a CS sophomore who could not decide either, joined the same hackathon club you did, and took a scrappy startup internship before the big one.</p>
-            <p>CareerPath reads thousands of those years so you can see the pattern, then helps you reach the people behind it with messages that sound like you on a good day.</p>
+            <p>NextStepSC reads thousands of those years so you can see the pattern, then helps you reach the people behind it with messages that sound like you on a good day.</p>
           </div>
         </div>
       </section>

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ArrowUp, Inbox } from "lucide-react";
+import { ArrowLeft, ArrowUp, Inbox, Sparkles } from "lucide-react";
 import {
+  useAskAi,
   useGetConversations,
   useGetMessages,
   useSendMessage,
@@ -35,6 +36,7 @@ export function MessageSession() {
     query: { enabled: !!active, queryKey: getGetMessagesQueryKey(active), refetchInterval: 3000 },
   });
   const send = useSendMessage();
+  const aiReply = useAskAi();
   const list = conversations.data ?? [];
   const conversation = list.find((item) => item.id === active);
 
@@ -68,6 +70,14 @@ export function MessageSession() {
         qc.invalidateQueries({ queryKey: getGetNetworkQueryKey() });
       },
       onError: (error) => toast({ title: "Not sent", description: errMsg(error), variant: "destructive" }),
+    });
+  };
+
+  const helpDraft = () => {
+    if (!conversation) return;
+    aiReply.mutate({ data: { kind: "reply", conversationId: active, personId: conversation.person.id } }, {
+      onSuccess: (result) => setText(result.text),
+      onError: (error) => toast({ title: "AI draft unavailable", description: errMsg(error), variant: "destructive" }),
     });
   };
 
@@ -145,8 +155,19 @@ export function MessageSession() {
                 <p className="rounded-2xl bg-gold-soft px-4 py-3 text-sm text-ink">Your first message is on its way. You can write again once {conversation.person.name.split(" ")[0]} replies.</p>
               ) : (
                 <>
+                  {aiReply.isPending && <AiThinking label="Drafting a reply..." className="mb-2" />}
                   {send.isPending && <AiThinking label="Sending your message..." className="mb-2" />}
                   <div className="flex items-end gap-2">
+                    <button
+                      type="button"
+                      onClick={helpDraft}
+                      disabled={aiReply.isPending}
+                      className="flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-cardinal/30 px-3 text-xs font-semibold text-cardinal hover:bg-gold-soft disabled:opacity-50"
+                      aria-label="Draft message with AI"
+                      data-testid="button-session-ai-draft"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" /><span>AI assist</span>
+                    </button>
                     <Textarea
                       value={text}
                       onChange={(event) => setText(event.target.value)}
