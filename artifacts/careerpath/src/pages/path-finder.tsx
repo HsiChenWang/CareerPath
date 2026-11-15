@@ -105,7 +105,21 @@ export default function PathFinder() {
             <div className="rise rounded-[1.75rem] bg-cardinal p-7 text-white md:p-9">
               <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold" data-testid="text-based-on">Based on {path.total} related alumni</p>
               <h2 className="mt-2 font-display text-3xl md:text-4xl" data-testid="text-path-title">{path.role}{path.company ? ` at ${path.company}` : ""}</h2>
-              <p className="mt-4 text-white/85 md:text-lg" data-testid="text-path-summary">{path.summary}</p>
+              <div className="mt-4 rounded-2xl border border-white/15 bg-white/5 p-4" data-testid="text-path-summary">
+                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-gold">Quick read</p>
+                {path.steps.length ? (
+                  <ul className="mt-3 space-y-2">
+                    {path.steps.slice(0, 3).map((step) => (
+                      <li key={step.id} className="flex items-start gap-2.5 text-sm text-white/90 md:text-base">
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" aria-hidden />
+                        <span>{step.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-sm text-white/80">No common steps were found in this sample.</p>
+                )}
+              </div>
               {path.total < 5 && <p className="mt-3 text-xs text-white/70">The related-alumni sample is small, so step percentages are hidden rather than overstated.</p>}
               {path.fallback && <p className="mt-3 text-xs text-white/60">Built from pattern counts while the AI rests. The numbers are real.</p>}
             </div>
@@ -176,6 +190,7 @@ export default function PathFinder() {
           <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
             <div className="rounded-[1.75rem] border bg-card p-6">
               <p className="font-display text-xl">The Trojans behind it</p>
+              <p className="mt-1 text-xs text-muted-foreground">AI-generated portraits for demo profiles</p>
               <div className="mt-4 space-y-3">
                 {path.alumni.slice(0, 8).map((a) => (
                   <Link key={a.id} href={`/people/${a.id}`} className="flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-muted" data-testid={`link-path-alum-${a.id}`}>

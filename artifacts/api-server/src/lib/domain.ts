@@ -8,11 +8,22 @@ export class HttpError extends Error {
 }
 export const id = () => randomUUID();
 export const nowFor = (user: PersonRow) => new Date(Date.now() + user.offsetDays * 86400000);
-export const publicPerson = (row: PersonRow): Person => GetPersonResponse.parse({
-  clubs: [], skills: [], interests: [], experience: [], courses: [], timeline: [],
-  ...(row.profile as Record<string, unknown>),
-  id: row.id, name: row.name, role: row.role, isDemo: row.isDemo,
-});
+export const publicPerson = (row: PersonRow): Person => {
+  const profile = row.profile as Record<string, unknown>;
+  const alumniNumber = row.id === "priya"
+    ? 1
+    : Number(row.id.match(/^alum-(\d+)$/)?.[1] ?? 0);
+  const portraitNumber = alumniNumber > 0 ? ((alumniNumber - 1) % 12) + 1 : 0;
+  const demoPortrait = row.isDemo && row.role === "alumni" && portraitNumber
+    ? `avatars/alumni-${String(portraitNumber).padStart(2, "0")}.jpg`
+    : undefined;
+  return GetPersonResponse.parse({
+    clubs: [], skills: [], interests: [], experience: [], courses: [], timeline: [],
+    ...profile,
+    ...(typeof profile.photo === "string" ? {} : demoPortrait ? { photo: demoPortrait } : {}),
+    id: row.id, name: row.name, role: row.role, isDemo: row.isDemo,
+  });
+};
 export async function personRow(personId: string) {
   const [person] = await db.select().from(peopleTable).where(eq(peopleTable.id, personId));
   if (!person) throw new HttpError(404, "This Trojan could not be found.");

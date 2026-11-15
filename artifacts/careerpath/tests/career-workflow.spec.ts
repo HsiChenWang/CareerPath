@@ -262,6 +262,8 @@ test("follows an Explore recommendation through a mapped path into My Gap", asyn
   await expect(page.getByTestId("input-dream-role")).toHaveValue("Product Manager");
   await expect(page.getByTestId("input-dream-company")).toHaveValue("Google");
   await expect(page.getByTestId("text-path-title")).toHaveText("Product Manager at Google");
+  await expect(page.getByTestId("text-path-summary")).toContainText("Quick read");
+  await expect(page.getByTestId("text-path-summary").locator("li")).toHaveCount(Math.min(path.steps.length, 3));
   await expect(page.getByTestId("step-path-internship")).toBeVisible();
   expect(mappedGoals).toEqual([{ role: "Product Manager", company: "Google" }]);
 
@@ -358,4 +360,16 @@ test("gives alumni a Chat Session tab and a schedule of confirmed chats", async 
   await expect(page.getByTestId("card-chat-alumni-future-chat")).toBeVisible();
   await expect(page.getByTestId("card-chat-alumni-past-chat")).toBeVisible();
   await expect(page.getByTestId("card-chat-alumni-pending-chat")).toHaveCount(0);
+});
+
+test("shows mapped career paths as a short quick-read list", async ({ page }) => {
+  await mockCareerApi(page, { hasPath: true });
+
+  await page.goto("/explore");
+  await page.getByTestId("button-explore-path-priya").click();
+
+  const quickRead = page.getByTestId("text-path-summary");
+  await expect(quickRead).toContainText("Quick read");
+  await expect(quickRead.locator("li")).toHaveCount(Math.min(path.steps.length, 3));
+  await expect(quickRead).not.toContainText(path.summary);
 });

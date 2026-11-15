@@ -20,6 +20,7 @@ const person = {
   id: "priya",
   name: "Priya Shah",
   role: "alumni",
+  photo: "avatars/alumni-01.jpg",
   school: "Viterbi",
   major: "Computer Science",
   level: "Undergrad",
@@ -64,6 +65,7 @@ test("shows profile actions, shared details, and a readable career timeline", as
   await page.goto("/people/priya");
 
   await expect(page.getByTestId("text-person-name")).toHaveText("Priya Shah");
+  await expect(page.locator('img[data-testid="img-avatar"]')).toHaveAttribute("src", /avatars\/alumni-01\.jpg$/);
   await expect(page.getByRole("heading", { name: "Conversation starters" })).toBeVisible();
   await expect(page.getByTestId("text-person-fit")).toContainText("HackSC");
   await expect(page.getByRole("button", { name: /Draft message/ })).toBeVisible();

@@ -8,8 +8,12 @@ import { initials } from "@/lib/cp";
 
 export function PersonAvatar({ person, size = 48, className }: { person: Pick<Person, "name" | "photo" | "role">; size?: number; className?: string }) {
   const alum = person.role === "alumni";
-  if (person.photo) {
-    return <img src={person.photo} alt={person.name} style={{ width: size, height: size }} className={cn("rounded-2xl object-cover shrink-0", className)} />;
+  const [photoFailed, setPhotoFailed] = useState(false);
+  if (person.photo && !photoFailed) {
+    const photoSrc = /^(https?:|data:|blob:|\/)/i.test(person.photo)
+      ? person.photo
+      : `${import.meta.env.BASE_URL}${person.photo.replace(/^\/+/, "")}`;
+    return <img src={photoSrc} alt={person.photo.startsWith("avatars/") ? `${person.name}, AI-generated profile portrait` : person.name} title={person.photo.startsWith("avatars/") ? "AI-generated demo portrait" : undefined} onError={() => setPhotoFailed(true)} style={{ width: size, height: size }} className={cn("rounded-2xl object-cover shrink-0", className)} data-testid="img-avatar" />;
   }
   return (
     <div

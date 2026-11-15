@@ -36,9 +36,6 @@ export default function Landing() {
                 Get started <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
-            <p className="rise mt-10 max-w-lg font-display text-3xl leading-tight text-ink md:text-4xl" style={{ animationDelay: "320ms" }}>
-              Somebody already walked your path. <span className="text-cardinal">Go say hi.</span>
-            </p>
           </div>
 
           <div className="rise relative w-full lg:max-w-[400px] xl:max-w-none" style={{ animationDelay: "200ms" }}>
