@@ -202,7 +202,7 @@ export default function Profile() {
         sessionStorage.removeItem(PATH_KEY);
         setFilled(new Set());
         toast({ title: "Profile saved" });
-        const destination = next ?? (welcome ? (alum ? "/requests" : "/career-workflow") : undefined);
+        const destination = next ?? (welcome ? (alum ? "/requests" : "/explore") : undefined);
         if (destination) setLocation(destination);
         else tips.mutate({ data: { kind: "tips" } });
       },
