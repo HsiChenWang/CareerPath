@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/bits";
 const STARTS = [
   {
     href: "/explore",
-    title: "Explore alumni journeys",
+    title: "Find your dream job",
     description: "Browse Trojans who started in a similar place and discover where their careers led.",
     action: "Explore careers",
     icon: Compass,
@@ -15,7 +15,7 @@ const STARTS = [
   },
   {
     href: "/path-finder",
-    title: "Find a path to a goal",
+    title: "Get your custom roadmap to your dream job",
     description: "Choose a role or company and see the steps alumni commonly took to get there.",
     action: "Find a path",
     icon: Map,
