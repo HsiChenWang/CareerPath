@@ -115,6 +115,10 @@ for (const role of ["student", "alumni"] as const) {
     await expect(page).toHaveURL(/\/profile\?welcome=1$/);
     await expect(page.getByTestId("button-save-profile")).toHaveText("Save and continue");
     await expect(page.getByTestId(role === "alumni" ? "input-current-role" : "select-level")).toBeVisible();
+      if (role === "student") {
+        await expect(page.getByRole("heading", { name: "Do you know what career you want?" })).toHaveCount(0);
+        await expect(page.getByTestId("button-knows-yes")).toHaveCount(0);
+      }
   });
 }
 

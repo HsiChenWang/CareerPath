@@ -42,7 +42,6 @@ export default function Profile() {
   const [filled, setFilled] = useState<Set<string>>(new Set());
   const [resume, setResume] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [knows, setKnows] = useState<"yes" | "no" | "">("");
   const init = useRef<string | null>(null);
   const resumeFileInput = useRef<HTMLInputElement>(null);
   const save = useSaveProfile();
@@ -60,7 +59,6 @@ export default function Profile() {
         if (v !== undefined && v !== null) (f as Record<string, unknown>)[k] = v;
       }
       setForm(f);
-      if (user.dreamRole) setKnows("yes");
     }
   }, [user]);
 
@@ -193,7 +191,6 @@ export default function Profile() {
     }
     if (data.gradYear !== undefined) data.gradYear = Number(data.gradYear) || undefined;
     if (data.maxChats !== undefined) data.maxChats = Math.max(0, Math.min(30, Number(data.maxChats) || 0));
-    if (!alum && knows === "no") { data.dreamRole = ""; data.dreamCompany = ""; }
     save.mutate({ data }, {
       onSuccess: (p) => {
         qc.setQueryData<Session>(getGetSessionQueryKey(), { user: p });
@@ -311,7 +308,7 @@ export default function Profile() {
             </div>
           </Card>
 
-          {alum ? (
+          {alum && (
             <Card eyebrow="Alumni settings" title="How you want to help">
               <div className="grid gap-5 md:grid-cols-2">
                 <Field label="Current role"><Input value={form.currentRole ?? ""} onChange={(e) => set("currentRole", e.target.value)} className="h-11 rounded-xl" data-testid="input-current-role" /></Field>
@@ -330,20 +327,6 @@ export default function Profile() {
                 <Field label={`Max chats per month: ${form.maxChats ?? 0}`}><input type="range" min={0} max={30} value={form.maxChats ?? 0} onChange={(e) => set("maxChats", Number(e.target.value))} className="w-full accent-[#990000]" data-testid="input-max-chats" /></Field>
               </div>
             </Card>
-          ) : (
-            <Card eyebrow="The big question" title="Do you know what career you want?" className="border-cardinal/30">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {([["yes", "Yes, I have a target"], ["no", "Not sure yet"]] as const).map(([v, l]) => (
-                  <button key={v} onClick={() => setKnows(v)} className={cn("rounded-2xl border-2 p-5 text-left font-display text-xl transition-all active:scale-[.98]", knows === v ? "border-cardinal bg-cardinal text-white" : "bg-paper hover:border-cardinal/40")} data-testid={`button-knows-${v}`}>{l}</button>
-                ))}
-              </div>
-              {knows === "yes" && (
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  <Field label="Dream role"><Input value={form.dreamRole ?? ""} onChange={(e) => set("dreamRole", e.target.value)} placeholder="Product Manager" className="h-11 rounded-xl" data-testid="input-dream-role" /></Field>
-                  <Field label="Dream company (optional)"><Input value={form.dreamCompany ?? ""} onChange={(e) => set("dreamCompany", e.target.value)} placeholder="Google" className="h-11 rounded-xl" data-testid="input-dream-company" /></Field>
-                </div>
-              )}
-            </Card>
           )}
         </div>
 
@@ -351,12 +334,6 @@ export default function Profile() {
           <div className="rounded-[1.75rem] border bg-card p-6">
             <button onClick={() => submit()} disabled={save.isPending || (welcome && !draftReady)} className="h-12 w-full rounded-full bg-cardinal font-semibold text-white transition-transform active:scale-[.98] disabled:opacity-60" data-testid="button-save-profile">{save.isPending ? "Saving..." : welcome ? "Save and continue" : "Save profile"}</button>
             {welcome && !draftReady && <p className="mt-3 text-xs leading-relaxed text-muted-foreground" data-testid="text-profile-required">To continue, add your USC school, major{alum ? ", and current role." : ", level, and year or graduation year."}</p>}
-            {!welcome && !alum && knows === "yes" && (
-              <button onClick={() => submit(`/path-finder?role=${encodeURIComponent(form.dreamRole ?? "")}&company=${encodeURIComponent(form.dreamCompany ?? "")}`)} disabled={save.isPending || !form.dreamRole?.trim()} className="mt-2 h-12 w-full rounded-full bg-gold font-semibold text-ink disabled:opacity-50" data-testid="button-save-path">Save and map my path</button>
-            )}
-            {!welcome && !alum && knows === "no" && (
-              <button onClick={() => submit("/explore")} disabled={save.isPending} className="mt-2 h-12 w-full rounded-full bg-gold font-semibold text-ink disabled:opacity-50" data-testid="button-save-explore">Save and explore careers</button>
-            )}
           </div>
           {(tips.isPending || tips.data || tips.isError) && (
             <div className="rise rounded-[1.75rem] bg-gold-soft p-6">
