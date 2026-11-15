@@ -41,7 +41,7 @@ export default function Landing() {
     <div className="overflow-x-hidden">
       {/* HERO */}
       <section className="relative bg-paper">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 md:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 md:px-12">
           <Logo />
           <div className="flex items-center gap-2">
             {user ? (
@@ -55,12 +55,12 @@ export default function Landing() {
           </div>
         </div>
 
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-8 md:px-8 lg:grid-cols-[1.15fr_1fr] lg:pb-28 lg:pt-14">
+        <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-8 md:px-12 lg:grid-cols-2 lg:gap-16 lg:pb-4 lg:pt-8">
           <div className="relative z-10">
             <p className="rise inline-flex items-center gap-2 rounded-full border border-cardinal/15 bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-cardinal">
               <span className="h-2 w-2 rounded-full bg-gold" /> An AI career companion for USC
             </p>
-            <h1 className="rise mt-6 font-display text-[3.2rem] font-semibold leading-[0.95] tracking-tight text-ink sm:text-7xl lg:text-[5.6rem]" style={{ animationDelay: "80ms" }} data-testid="text-headline">
+            <h1 className="rise mt-6 font-display text-[3.2rem] font-semibold leading-[0.95] tracking-tight text-ink sm:text-7xl lg:text-6xl xl:text-7xl" style={{ animationDelay: "80ms" }} data-testid="text-headline">
               See how Trojans got there.{" "}
               <span className="relative inline-block text-cardinal">
                 Find your path.
@@ -86,33 +86,10 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="rise relative" style={{ animationDelay: "200ms" }}>
+          <div className="rise relative w-full lg:max-w-[400px] xl:max-w-none" style={{ animationDelay: "200ms" }}>
             <div className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] shadow-2xl sm:aspect-[5/5] lg:aspect-[4/5]">
               <img src={`${import.meta.env.BASE_URL}hero-path.jpg`} alt="A golden path winding across campus" className="h-full w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-cardinal-deep/70 via-transparent to-transparent" />
-            </div>
-            {/* floating timeline card */}
-            <div className="absolute -bottom-8 -left-2 w-[78%] rounded-3xl border bg-card p-5 shadow-xl sm:-left-10 sm:w-72">
-              <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-2xl bg-cardinal font-display text-gold">PS</span>
-                <div>
-                  <p className="text-sm font-semibold">Priya Shah, Viterbi '21</p>
-                  <p className="text-xs text-muted-foreground">Product Manager, Google</p>
-                </div>
-              </div>
-              <ol className="relative mt-4 space-y-2.5 pl-6">
-                <span className="trail absolute bottom-1 left-[5px] top-1 w-1" />
-                {["Freshman: joined a hackathon club", "Junior: SWE intern, startup", "Senior: APM internship", "Now: PM, Google"].map((s, i) => (
-                  <li key={s} className="relative text-xs">
-                    <span className={`absolute -left-6 top-0.5 h-3 w-3 rounded-full border-2 border-cardinal ${i === 3 ? "bg-cardinal" : "bg-card"}`} />
-                    {s}
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className="absolute -right-2 top-8 hidden rounded-2xl bg-gold px-4 py-3 shadow-lg sm:block">
-              <p className="font-display text-3xl leading-none text-ink">6 of 9</p>
-              <p className="mt-1 text-xs font-medium text-ink/75">interned by junior year</p>
             </div>
           </div>
         </div>
