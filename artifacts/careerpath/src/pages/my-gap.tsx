@@ -1,19 +1,22 @@
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, Sparkles, Target } from "lucide-react";
+import { Check, Target } from "lucide-react";
 import { useGetGap, useUpdateGapStep, getGetGapQueryKey, getGetNetworkQueryKey } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
 import { CareerWorkflowProgress } from "@/components/career-workflow";
 import { CardSkeletons, EmptyBlock, ErrorBlock, PageHeader, Tag } from "@/components/bits";
 import { useCoach } from "@/components/coach";
+import { TaskCategoryLists } from "@/components/task-category-lists";
+import { TimelinePlan } from "@/components/timeline-plan";
 import { useToast } from "@/hooks/use-toast";
-import { alumniRateLabel, errMsg, isOptionalTask, TASK_LIST_CATEGORIES, taskListCategory } from "@/lib/cp";
+import { alumniRateLabel, errMsg, isOptionalTask, useMe } from "@/lib/cp";
 import { cn } from "@/lib/utils";
 
 export default function MyGap() {
   const qc = useQueryClient();
   const { toast } = useToast();
   const { ask } = useCoach();
+  const { user } = useMe();
   const q = useGetGap({ query: { refetchOnMount: "always" } });
   const update = useUpdateGapStep();
   const gap = q.data;
@@ -47,54 +50,35 @@ export default function MyGap() {
                 <p className="mt-2 text-xs text-paper/55">Case competitions and certificates are optional and do not count toward core progress.</p>
               </div>
             </div>
-            <div className="rounded-[1.75rem] border bg-card p-6">
-              <p className="mb-4 flex items-center gap-2 font-display text-2xl"><Sparkles className="h-5 w-5 text-cardinal" />This semester</p>
-              <div className="space-y-3">
-                {gap.actions.slice(0, 3).map((a, i) => (
-                  <div key={i} className="rise rounded-2xl bg-gold-soft/60 p-4" style={{ animationDelay: `${i * 80}ms` }} data-testid={`card-action-${i}`}>
-                    <div className="flex gap-3">
-                      <span className="font-display text-2xl text-cardinal">{i + 1}</span>
-                      <p className="text-sm text-ink">{a}</p>
-                    </div>
-                    <button onClick={() => ask(`Help me do this: ${a}`)} className="ml-8 mt-3 rounded-full bg-cardinal px-4 py-1.5 text-xs font-semibold text-white transition-transform active:scale-95" data-testid={`button-help-action-${i}`}>Help me do this</button>
-                  </div>
-                ))}
-                {!gap.actions.length && <p className="text-sm text-muted-foreground">No actions yet. Check off steps you have done to sharpen the plan.</p>}
-              </div>
-            </div>
+            <TimelinePlan
+              gap={gap}
+              profileYear={user?.year}
+              onAsk={(step) => ask(`Help me plan this task for ${step.title}: ${step.description}`)}
+            />
           </div>
           <div className="rounded-[1.75rem] border bg-card p-3 md:p-4">
-            {TASK_LIST_CATEGORIES.map((category) => {
-              const tasks = gap.steps.filter((step) => taskListCategory(step) === category);
-              if (!tasks.length) return null;
-              return (
-                <section key={category} aria-label={category} className="mb-4 last:mb-0" data-testid={`task-list-${category.toLowerCase().replaceAll(" ", "-")}`}>
-                  <div className="mb-2 flex items-center justify-between border-b px-4 pb-2">
-                    <h2 className="font-display text-xl">{category}</h2>
-                    <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{tasks.length} task{tasks.length === 1 ? "" : "s"}</span>
+            <TaskCategoryLists
+              tasks={gap.steps}
+              renderTask={(s) => (
+                <button key={s.id} onClick={() => toggle(s.id, !s.done)} disabled={update.isPending} className={cn("group flex w-full items-start gap-4 rounded-2xl p-4 text-left transition-colors hover:bg-muted/60", s.done && "opacity-80")} data-testid={`checkbox-step-${s.id}`}>
+                  <span className={cn("mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 transition-all", s.done ? "border-cardinal bg-cardinal text-gold" : "border-input group-hover:border-cardinal")}>
+                    {s.done && <Check className="h-4 w-4" strokeWidth={3} />}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-[11px] uppercase tracking-wider text-cardinal">{s.stage}</span>
+                      <Tag tone={s.done ? "gold" : "muted"}>{s.done ? "Done" : "Not yet"}</Tag>
+                      {isOptionalTask(s) && <Tag tone="muted">Optional</Tag>}
+                    </div>
+                    <p className={cn("mt-1 font-semibold", s.done && "line-through decoration-gold decoration-2")}>{s.title}</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">{s.description}</p>
+                    <p className="mt-1 font-mono text-[11px] text-muted-foreground" data-testid={`text-alumni-rate-${s.id}`}>
+                      {s.category === "advice" ? "Personal advice from a Trojan; not an alumni rate." : alumniRateLabel(s.count, s.total)}
+                    </p>
                   </div>
-                  {tasks.map((s) => (
-                    <button key={s.id} onClick={() => toggle(s.id, !s.done)} disabled={update.isPending} className={cn("group flex w-full items-start gap-4 rounded-2xl p-4 text-left transition-colors hover:bg-muted/60", s.done && "opacity-80")} data-testid={`checkbox-step-${s.id}`}>
-                      <span className={cn("mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 transition-all", s.done ? "border-cardinal bg-cardinal text-gold" : "border-input group-hover:border-cardinal")}>
-                        {s.done && <Check className="h-4 w-4" strokeWidth={3} />}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-[11px] uppercase tracking-wider text-cardinal">{s.stage}</span>
-                          <Tag tone={s.done ? "gold" : "muted"}>{s.done ? "Done" : "Not yet"}</Tag>
-                          {isOptionalTask(s) && <Tag tone="muted">Optional</Tag>}
-                        </div>
-                        <p className={cn("mt-1 font-semibold", s.done && "line-through decoration-gold decoration-2")}>{s.title}</p>
-                        <p className="mt-0.5 text-sm text-muted-foreground">{s.description}</p>
-                        <p className="mt-1 font-mono text-[11px] text-muted-foreground" data-testid={`text-alumni-rate-${s.id}`}>
-                          {s.category === "advice" ? "Personal advice from a Trojan; not an alumni rate." : alumniRateLabel(s.count, s.total)}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
-                </section>
-              );
-            })}
+                </button>
+              )}
+            />
           </div>
         </div>
       )}

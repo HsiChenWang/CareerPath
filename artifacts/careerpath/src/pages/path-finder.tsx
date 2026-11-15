@@ -8,9 +8,11 @@ import { Page } from "@/components/shell";
 import { CareerWorkflowProgress } from "@/components/career-workflow";
 import { AiThinking, EmptyBlock, ErrorBlock, PageHeader, PersonAvatar, Tag } from "@/components/bits";
 import { useCoach } from "@/components/coach";
+import { TaskCategoryLists } from "@/components/task-category-lists";
+import { TimelinePlan } from "@/components/timeline-plan";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
-import { alumniRateLabel, errMsg, isOptionalTask, percentOfRelatedAlumni, TASK_LIST_CATEGORIES, taskListCategory, useMe, PATH_KEY } from "@/lib/cp";
+import { alumniRateLabel, errMsg, isOptionalTask, percentOfRelatedAlumni, useMe, PATH_KEY } from "@/lib/cp";
 
 const PATH_CACHE_VERSION = 3;
 function loadStored(): CareerPath | null {
@@ -80,10 +82,6 @@ export default function PathFinder() {
   });
   const gap = gapQuery.data;
   const matchedTasks = gap?.steps.filter((step) => step.category !== "advice" && !isOptionalTask(step) && step.done).length ?? 0;
-  const taskLists = TASK_LIST_CATEGORIES.map((category) => ({
-    category,
-    steps: path?.steps.filter((step) => taskListCategory(step) === category) ?? [],
-  }));
 
   return (
     <Page>
@@ -113,6 +111,7 @@ export default function PathFinder() {
               {path.total < 5 && <p className="mt-3 text-xs text-white/70">The related-alumni sample is small, so step percentages are hidden rather than overstated.</p>}
               {path.fallback && <p className="mt-3 text-xs text-white/60">Built from pattern counts while the AI rests. The numbers are real.</p>}
             </div>
+            {gap && <div className="mt-8"><TimelinePlan gap={gap} profileYear={user?.year} /></div>}
             <section className="mt-8" aria-labelledby="task-list-title">
               <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
@@ -127,62 +126,52 @@ export default function PathFinder() {
               {path.steps.length === 0 ? (
                 <p className="mt-6 text-muted-foreground">No matching alumni timelines yet. Try a broader role name.</p>
               ) : (
-                <div className="space-y-6">
-                  {taskLists.map(({ category, steps }) => steps.length > 0 && (
-                    <section key={category} aria-label={category} data-testid={`task-list-${category.toLowerCase().replaceAll(" ", "-")}`}>
-                      <div className="mb-3 flex items-center justify-between border-b pb-2">
-                        <h4 className="font-display text-xl">{category}</h4>
-                        <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{steps.length} task{steps.length === 1 ? "" : "s"}</span>
-                      </div>
-                      <ol className="space-y-3">
-                        {steps.map((step, index) => {
-                          const profileStep = gap?.steps.find((item) => item.id === step.id);
-                          const done = !!profileStep?.done;
-                          const rate = percentOfRelatedAlumni(step.count, step.total);
-                          return (
-                            <li key={step.id} className="rise" style={{ animationDelay: `${index * 70}ms` }} data-testid={`task-${step.id}`}>
-                        <button
-                          type="button"
-                          onClick={() => profileStep && toggleStep(profileStep.id, !done)}
-                          disabled={!profileStep || gapQuery.isError || updateStep.isPending}
-                          aria-pressed={done}
-                          aria-label={`${done ? "Mark not done" : "Mark done"}: ${step.title}`}
-                          className="group flex w-full items-start gap-4 rounded-3xl border bg-card p-5 text-left transition-all hover:border-cardinal/35 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-80"
-                          data-testid={`button-task-${step.id}`}
-                        >
-                          <span className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 ${done ? "border-cardinal bg-cardinal text-gold" : "border-input group-hover:border-cardinal"}`}>
-                            {done && <Check className="h-4 w-4" strokeWidth={3} />}
+                <TaskCategoryLists
+                  tasks={path.steps}
+                  renderTask={(step) => {
+                    const profileStep = gap?.steps.find((item) => item.id === step.id);
+                    const done = !!profileStep?.done;
+                    const rate = percentOfRelatedAlumni(step.count, step.total);
+                    return (
+                      <button
+                        key={step.id}
+                        type="button"
+                        onClick={() => profileStep && toggleStep(profileStep.id, !done)}
+                        disabled={!profileStep || gapQuery.isError || updateStep.isPending}
+                        aria-pressed={done}
+                        aria-label={`${done ? "Mark not done" : "Mark done"}: ${step.title}`}
+                        className="group flex w-full items-start gap-4 rounded-3xl border bg-card p-5 text-left transition-all hover:border-cardinal/35 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-80"
+                        data-testid={`button-task-${step.id}`}
+                      >
+                        <span className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 ${done ? "border-cardinal bg-cardinal text-gold" : "border-input group-hover:border-cardinal"}`}>
+                          {done && <Check className="h-4 w-4" strokeWidth={3} />}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-[11px] uppercase tracking-wider text-cardinal">{step.stage}</span>
+                            {profileStep && <Tag tone={done ? "gold" : "muted"}>{done ? "Already done" : "Suggested"}</Tag>}
+                            {isOptionalTask(step) && <Tag tone="muted">Optional</Tag>}
                           </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="flex flex-wrap items-center gap-2">
-                              <span className="font-mono text-[11px] uppercase tracking-wider text-cardinal">{step.stage}</span>
-                              {profileStep && <Tag tone={done ? "gold" : "muted"}>{done ? "Already done" : "Suggested"}</Tag>}
-                              {isOptionalTask(step) && <Tag tone="muted">Optional</Tag>}
-                            </span>
-                            <span className="mt-1 block text-lg font-semibold">{step.title}</span>
-                            <span className="mt-1 block text-sm text-muted-foreground">
-                              {gapQuery.isError ? "Profile comparison unavailable." : profileStep?.description ?? (gapQuery.isLoading ? "Checking your saved profile…" : "Not found in your saved profile yet.")}
-                            </span>
-                            {profileStep && <span className="mt-1 block text-xs text-muted-foreground">{done ? "Found in your saved profile or confirmed by you." : "Suggested to build toward this goal."}</span>}
-                            {step.total >= 5 ? (
-                              <span className="mt-4 flex items-center gap-3">
-                                <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
-                                  <span className="block h-full rounded-full bg-gold transition-all" style={{ width: `${rate}%` }} />
-                                </span>
-                                <span className="whitespace-nowrap font-mono text-xs font-semibold" data-testid={`text-alumni-rate-${step.id}`}>{alumniRateLabel(step.count, step.total)}</span>
+                          <span className="mt-1 block text-lg font-semibold">{step.title}</span>
+                          <span className="mt-1 block text-sm text-muted-foreground">
+                            {gapQuery.isError ? "Profile comparison unavailable." : profileStep?.description ?? (gapQuery.isLoading ? "Checking your saved profile…" : "Not found in your saved profile yet.")}
+                          </span>
+                          {profileStep && <span className="mt-1 block text-xs text-muted-foreground">{done ? "Found in your saved profile or confirmed by you." : "Suggested to build toward this goal."}</span>}
+                          {step.total >= 5 ? (
+                            <span className="mt-4 flex items-center gap-3">
+                              <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
+                                <span className="block h-full rounded-full bg-gold transition-all" style={{ width: `${rate}%` }} />
                               </span>
-                            ) : (
-                              <span className="mt-4 block font-mono text-xs font-semibold text-muted-foreground" data-testid={`text-alumni-rate-${step.id}`}>{alumniRateLabel(step.count, step.total)}</span>
-                            )}
-                          </span>
-                        </button>
-                            </li>
-                          );
-                        })}
-                      </ol>
-                    </section>
-                  ))}
-                </div>
+                              <span className="whitespace-nowrap font-mono text-xs font-semibold" data-testid={`text-alumni-rate-${step.id}`}>{alumniRateLabel(step.count, step.total)}</span>
+                            </span>
+                          ) : (
+                            <span className="mt-4 block font-mono text-xs font-semibold text-muted-foreground" data-testid={`text-alumni-rate-${step.id}`}>{alumniRateLabel(step.count, step.total)}</span>
+                          )}
+                        </span>
+                      </button>
+                    );
+                  }}
+                />
               )}
             </section>
           </div>
@@ -192,19 +181,6 @@ export default function PathFinder() {
               <p className="mt-1 font-display text-2xl">See your gap to this path</p>
               <ArrowRight className="mt-4 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
-            {gap && gap.actions.length > 0 && (
-              <div className="rounded-[1.75rem] border bg-card p-6" data-testid="panel-suggested-next-steps">
-                <p className="font-mono text-[11px] uppercase tracking-wider text-cardinal">Suggested next steps</p>
-                <ol className="mt-3 space-y-3">
-                  {gap.actions.slice(0, 3).map((action, index) => (
-                    <li key={`${index}-${action}`} className="flex gap-3 text-sm">
-                      <span className="font-display text-lg text-cardinal">{index + 1}</span>
-                      <span>{action}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
             <div className="rounded-[1.75rem] border bg-card p-6" data-testid="panel-resume-comparison">
               <p className="font-display text-xl">Compared with your profile</p>
               <p className="mt-2 text-sm text-muted-foreground">Upload or update your resume in Profile, then save the extracted details to refresh this comparison. The original resume file is not retained.</p>
