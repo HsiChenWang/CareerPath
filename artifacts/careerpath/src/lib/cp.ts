@@ -58,6 +58,10 @@ export function roleLine(p: Person): string {
   return [p.year, p.major].filter(Boolean).join(" · ") || p.school;
 }
 
+export function percentOfRelatedAlumni(count: number, total: number): number {
+  return total > 0 ? Math.round((count / total) * 100) : 0;
+}
+
 export const SCHOOLS = ["Marshall", "Viterbi", "Dornsife", "Annenberg", "Rossier", "Cinematic Arts", "Thornton", "Other"];
 export const LEVELS = ["Undergrad", "Master's", "PhD"];
 

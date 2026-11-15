@@ -54,6 +54,7 @@ export async function rankedPeople(userRow: PersonRow, kind: string, search = ""
 }
 function commonSteps(alumni: Person[], role: string): PathStep[] {
   if (!alumni.length) return [];
+  const rate = (count: number, total: number) => total > 0 ? Math.round((count / total) * 100) : 0;
   const top = (arrays: string[][]) => {
     const counts = new Map<string, number>();
     for (const array of arrays) for (const s of new Set(array)) counts.set(s, (counts.get(s) ?? 0) + 1);
@@ -66,11 +67,11 @@ function commonSteps(alumni: Person[], role: string): PathStep[] {
   const prefix = words(role).replaceAll(" ", "-");
   const total = alumni.length;
   return [
-    { id: `${prefix}-club`, stage: "Freshman year", title: `Find your community: ${club}`, description: `Join peers, work on projects, and build early relationships. ${clubCount} of ${total} matched alumni joined ${club}.`, count: clubCount, total, category: "club", keywords: [club] },
-    { id: `${prefix}-course`, stage: "Freshman → sophomore", title: course, description: `${courseCount} of ${total} completed this foundation before progressing to advanced work.`, count: courseCount, total, category: "course", keywords: [course] },
+    { id: `${prefix}-club`, stage: "Freshman year", title: `Find your community: ${club}`, description: `Join peers, work on projects, and build early relationships. ${rate(clubCount, total)}% of related alumni joined ${club}.`, count: clubCount, total, category: "club", keywords: [club] },
+    { id: `${prefix}-course`, stage: "Freshman → sophomore", title: course, description: `${rate(courseCount, total)}% of related alumni completed this foundation before progressing to advanced work.`, count: courseCount, total, category: "course", keywords: [course] },
     { id: `${prefix}-project`, stage: "Sophomore year", title: "Get hands-on project or research experience", description: "Apply classroom skills through a student-led project, lab, or research role.", count: events("project"), total, category: "project", keywords: ["research", "project", "built", "assistant"] },
     { id: `${prefix}-internship`, stage: "Junior summer", title: "Complete a relevant summer internship", description: "Develop real-world skills with a team; ask about return offers and mentorship.", count: events("internship"), total, category: "internship", keywords: ["intern", "summer analyst"] },
-    { id: `${prefix}-skill`, stage: "Junior → senior", title: `Build confidence with ${skill}`, description: `${skillCount} of ${total} list ${skill} among the skills they developed along the way.`, count: skillCount, total, category: "skill", keywords: [skill] },
+    { id: `${prefix}-skill`, stage: "Junior → senior", title: `Build confidence with ${skill}`, description: `${rate(skillCount, total)}% of related alumni list ${skill} among the skills they developed along the way.`, count: skillCount, total, category: "skill", keywords: [skill] },
     { id: `${prefix}-first-job`, stage: "First job → your goal", title: `Build toward ${role}`, description: "Use your first full-time role to deepen a specialty, seek feedback, and build relationships.", count: events("first-job"), total, category: "first-job", keywords: [role] },
   ];
 }
@@ -79,6 +80,8 @@ export function gapFor(user: PersonRow): Gap {
   const path = user.path ? FindPathResponse.parse(user.path) : null;
   if (!path) return { role: p.dreamRole || "", company: p.dreamCompany || "", completed: 0, total: 0, steps: [], actions: [] };
   const steps = path.steps.map(step => {
+    const rate = step.total > 0 ? Math.round((step.count / step.total) * 100) : 0;
+    const description = step.description.replace(/\b\d+\s+of\s+\d+(?:\s+matched alumni)?/i, `${rate}% of related alumni`);
     let source: string[] = [];
     switch (step.category) {
       case "club": source = p.clubs; break;
@@ -88,7 +91,7 @@ export function gapFor(user: PersonRow): Gap {
       default: source = p.experience;
     }
     const inferred = step.keywords.some(k => source.some(s => words(s).includes(words(k))));
-    return { ...step, done: user.completed[step.id] ?? inferred };
+    return { ...step, description, done: user.completed[step.id] ?? inferred };
   });
   for (let i = 0; i < user.extraActions.length; i++) {
     const action = user.extraActions[i]!;

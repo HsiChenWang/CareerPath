@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Map, Search } from "lucide-react";
-import { useFindPath, getGetGapQueryKey, getGetSessionQueryKey } from "@workspace/api-client-react";
+import { ArrowRight, Check, Map, Search } from "lucide-react";
+import { useFindPath, useGetGap, useUpdateGapStep, getGetGapQueryKey, getGetNetworkQueryKey, getGetSessionQueryKey } from "@workspace/api-client-react";
 import type { CareerPath } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
 import { CareerWorkflowProgress } from "@/components/career-workflow";
 import { AiThinking, EmptyBlock, ErrorBlock, PageHeader, PersonAvatar, Tag } from "@/components/bits";
 import { useCoach } from "@/components/coach";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
-import { errMsg, useMe, PATH_KEY } from "@/lib/cp";
+import { errMsg, percentOfRelatedAlumni, useMe, PATH_KEY } from "@/lib/cp";
 
 function loadStored(): CareerPath | null {
   try {
@@ -30,6 +31,9 @@ export default function PathFinder() {
   const [company, setCompany] = useState(params.get("company") || user?.dreamCompany || "");
   const [path, setPath] = useState<CareerPath | null>(() => (params.get("role") ? null : loadStored()));
   const find = useFindPath();
+  const gapQuery = useGetGap({ query: { enabled: !!path, queryKey: getGetGapQueryKey() } });
+  const updateStep = useUpdateGapStep();
+  const { toast } = useToast();
   const findRef = useRef(find.mutate);
   findRef.current = find.mutate;
   const ran = useRef(false);
@@ -61,6 +65,15 @@ export default function PathFinder() {
   }, [path, setFocus]);
 
   const submit = (e: FormEvent) => { e.preventDefault(); run(role, company); };
+  const toggleStep = (id: string, done: boolean) => updateStep.mutate({ id, data: { done } }, {
+    onSuccess: (gap) => {
+      qc.setQueryData(getGetGapQueryKey(), gap);
+      qc.invalidateQueries({ queryKey: getGetNetworkQueryKey() });
+    },
+    onError: (error) => toast({ title: "Could not update this track", description: errMsg(error), variant: "destructive" }),
+  });
+  const gap = gapQuery.data;
+  const matchedTracks = gap?.steps.filter((step) => step.done).length ?? 0;
 
   return (
     <Page>
@@ -89,32 +102,64 @@ export default function PathFinder() {
               <p className="mt-4 text-white/85 md:text-lg" data-testid="text-path-summary">{path.summary}</p>
               {path.fallback && <p className="mt-3 text-xs text-white/60">Built from pattern counts while the AI rests. The numbers are real.</p>}
             </div>
-            {path.steps.length === 0 ? (
-              <p className="mt-8 text-muted-foreground">No matching alumni timelines yet. Try a broader role name.</p>
-            ) : (
-              <ol className="relative mt-10">
-                <span className="trail absolute bottom-6 left-[19px] top-6 w-1" />
-                {path.steps.map((s, i) => (
-                  <li key={s.id} className="rise relative pb-6 pl-14" style={{ animationDelay: `${i * 90}ms` }} data-testid={`step-path-${s.id}`}>
-                    <span className="absolute left-0 top-4 grid h-10 w-10 place-items-center rounded-full border-4 border-paper bg-cardinal font-mono text-xs font-semibold text-gold">{i + 1}</span>
-                    <div className="rounded-3xl border bg-card p-5 transition-shadow hover:shadow-md">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-[11px] uppercase tracking-wider text-cardinal">{s.stage}</span>
-                        <Tag>{s.category}</Tag>
-                      </div>
-                      <p className="mt-1 text-lg font-semibold">{s.title}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">{s.description}</p>
-                      <div className="mt-4 flex items-center gap-3">
-                        <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
-                          <div className="grow h-full rounded-full bg-gold" style={{ width: `${s.total ? (s.count / s.total) * 100 : 0}%`, animationDelay: `${200 + i * 90}ms` }} />
-                        </div>
-                        <span className="whitespace-nowrap font-mono text-xs font-semibold" data-testid={`text-step-count-${s.id}`}>{s.count} of {s.total}</span>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            )}
+            <section className="mt-8" aria-labelledby="track-list-title">
+              <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cardinal">Your roadmap</p>
+                  <h3 id="track-list-title" className="mt-1 font-display text-2xl">Track list</h3>
+                  <p className="mt-1 max-w-xl text-sm text-muted-foreground">Compare each step with your saved profile. Resume details count after you import and save them in Profile.</p>
+                </div>
+                {gap && <p className="text-xs font-medium text-muted-foreground" data-testid="text-profile-track-match">{matchedTracks} track{matchedTracks === 1 ? "" : "s"} matched</p>}
+              </div>
+              {gapQuery.isError && <ErrorBlock message={`Profile comparison unavailable: ${errMsg(gapQuery.error)}`} onRetry={() => gapQuery.refetch()} />}
+              {gapQuery.isLoading && <AiThinking label="Comparing this track list with your saved profile..." className="mb-4 max-w-md" />}
+              {path.steps.length === 0 ? (
+                <p className="mt-6 text-muted-foreground">No matching alumni timelines yet. Try a broader role name.</p>
+              ) : (
+                <ol className="space-y-3">
+                  {path.steps.map((step, index) => {
+                    const profileStep = gap?.steps.find((item) => item.id === step.id);
+                    const done = !!profileStep?.done;
+                    const rate = percentOfRelatedAlumni(step.count, step.total);
+                    return (
+                      <li key={step.id} className="rise" style={{ animationDelay: `${index * 70}ms` }} data-testid={`track-${step.id}`}>
+                        <button
+                          type="button"
+                          onClick={() => profileStep && toggleStep(profileStep.id, !done)}
+                          disabled={!profileStep || gapQuery.isError || updateStep.isPending}
+                          aria-pressed={done}
+                          aria-label={`${done ? "Mark not done" : "Mark done"}: ${step.title}`}
+                          className="group flex w-full items-start gap-4 rounded-3xl border bg-card p-5 text-left transition-all hover:border-cardinal/35 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-80"
+                          data-testid={`button-track-${step.id}`}
+                        >
+                          <span className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 ${done ? "border-cardinal bg-cardinal text-gold" : "border-input group-hover:border-cardinal"}`}>
+                            {done && <Check className="h-4 w-4" strokeWidth={3} />}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono text-[11px] uppercase tracking-wider text-cardinal">{step.stage}</span>
+                              <Tag>{step.category}</Tag>
+                              {profileStep && <Tag tone={done ? "gold" : "muted"}>{done ? "Already done" : "Suggested"}</Tag>}
+                            </span>
+                            <span className="mt-1 block text-lg font-semibold">{step.title}</span>
+                            <span className="mt-1 block text-sm text-muted-foreground">
+                              {gapQuery.isError ? "Profile comparison unavailable." : profileStep?.description ?? (gapQuery.isLoading ? "Checking your saved profile…" : "Not found in your saved profile yet.")}
+                            </span>
+                            {profileStep && <span className="mt-1 block text-xs text-muted-foreground">{done ? "Found in your saved profile or confirmed by you." : "Suggested to build toward this goal."}</span>}
+                            <span className="mt-4 flex items-center gap-3">
+                              <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
+                                <span className="block h-full rounded-full bg-gold transition-all" style={{ width: `${rate}%` }} />
+                              </span>
+                              <span className="whitespace-nowrap font-mono text-xs font-semibold" data-testid={`text-alumni-rate-${step.id}`}>{rate}% of related alumni did this</span>
+                            </span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </section>
           </div>
           <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
             <Link href="/my-gap" className="group block rounded-[1.75rem] bg-gold p-6 text-ink transition-transform hover:-translate-y-1" data-testid="link-see-gap">
@@ -122,6 +167,24 @@ export default function PathFinder() {
               <p className="mt-1 font-display text-2xl">See your gap to this path</p>
               <ArrowRight className="mt-4 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
+            {gap && gap.actions.length > 0 && (
+              <div className="rounded-[1.75rem] border bg-card p-6" data-testid="panel-suggested-next-steps">
+                <p className="font-mono text-[11px] uppercase tracking-wider text-cardinal">Suggested next steps</p>
+                <ol className="mt-3 space-y-3">
+                  {gap.actions.slice(0, 3).map((action, index) => (
+                    <li key={`${index}-${action}`} className="flex gap-3 text-sm">
+                      <span className="font-display text-lg text-cardinal">{index + 1}</span>
+                      <span>{action}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            <div className="rounded-[1.75rem] border bg-card p-6" data-testid="panel-resume-comparison">
+              <p className="font-display text-xl">Compared with your profile</p>
+              <p className="mt-2 text-sm text-muted-foreground">Upload or update your resume in Profile, then save the extracted details to refresh this comparison. The original resume file is not retained.</p>
+              <Link href="/profile" className="mt-4 inline-block text-sm font-semibold text-cardinal hover:underline" data-testid="link-update-resume">Update profile or resume</Link>
+            </div>
             <div className="rounded-[1.75rem] border bg-card p-6">
               <p className="font-display text-xl">The Trojans behind it</p>
               <div className="mt-4 space-y-3">
