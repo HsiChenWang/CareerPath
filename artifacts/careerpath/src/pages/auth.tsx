@@ -15,7 +15,8 @@ const DEMO = [
   { who: "Priya Shah", what: "PM at Google, Viterbi '21", email: "priya@demo.careerpath.app" },
 ];
 const DEMO_PW = "Trojan2026!";
-const FEATURED_PORTRAITS = [1, 2, 3].map((n) => `${import.meta.env.BASE_URL}avatars/alumni-${String(n).padStart(2, "0")}.jpg`);
+const FEATURED_PORTRAITS = ["avatars/alumni-01.jpg", "avatars/alumni-02.jpg", "avatars/student-alex.jpg"]
+  .map((src) => `${import.meta.env.BASE_URL}${src}`);
 
 function useAuthed() {
   const qc = useQueryClient();
@@ -37,13 +38,10 @@ function Frame({ title, sub, children }: { title: string; sub: string; children:
         <div className="relative flex h-full flex-col justify-between p-12">
           <Link href="/" data-testid="link-home-auth"><Logo light /></Link>
           <blockquote className="max-w-lg">
-            <div className="mb-5 flex items-center gap-4">
-              <div className="flex -space-x-3">
-                {FEATURED_PORTRAITS.map((src, index) => (
-                  <img key={src} src={src} alt="" aria-hidden="true" className="h-12 w-12 rounded-full border-2 border-cardinal object-cover shadow-sm" style={{ zIndex: FEATURED_PORTRAITS.length - index }} />
-                ))}
-              </div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/70">AI-generated demo portraits</p>
+            <div className="mb-5 flex -space-x-3">
+              {FEATURED_PORTRAITS.map((src, index) => (
+                <img key={src} src={src} alt="" aria-hidden="true" className="h-12 w-12 rounded-full border-2 border-cardinal object-cover shadow-sm" style={{ zIndex: FEATURED_PORTRAITS.length - index }} data-testid="img-featured-portrait" />
+              ))}
             </div>
             <p className="font-display text-4xl leading-tight text-white">Somebody already walked your path. <span className="text-gold">Go say hi.</span></p>
           </blockquote>

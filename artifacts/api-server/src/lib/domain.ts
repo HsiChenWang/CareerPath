@@ -16,7 +16,9 @@ export const publicPerson = (row: PersonRow): Person => {
   const portraitNumber = alumniNumber > 0 ? ((alumniNumber - 1) % 12) + 1 : 0;
   const demoPortrait = row.isDemo && row.role === "alumni" && portraitNumber
     ? `avatars/alumni-${String(portraitNumber).padStart(2, "0")}.jpg`
-    : undefined;
+    : row.isDemo && row.role === "student" && row.id === "alex"
+      ? "avatars/student-alex.jpg"
+      : undefined;
   return GetPersonResponse.parse({
     clubs: [], skills: [], interests: [], experience: [], courses: [], timeline: [],
     ...profile,

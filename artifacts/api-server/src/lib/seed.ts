@@ -102,6 +102,7 @@ export async function seedCareerPath() {
         interests: i === 0 ? ["Technology", "Entrepreneurship", "AI", "Design"] : [c.outcome, "Technology"],
         dreamRole: i % 4 === 0 ? "" : c.role, dreamCompany: i % 4 === 0 ? "" : c.company,
         currentRole: "USC Student", company: "University of Southern California", timeline: [],
+        ...(i === 0 ? { photo: "avatars/student-alex.jpg" } : {}),
         openToChat: true, helpTopics: [], availability: [], maxChats: 4,
         bio: i === 0 ? "CS sophomore exploring what comes next. Usually building something at HackSC or thinking about startup ideas at LavaLab." : `Exploring ${c.outcome.toLowerCase()} and looking for other Trojans to learn alongside.`,
       },

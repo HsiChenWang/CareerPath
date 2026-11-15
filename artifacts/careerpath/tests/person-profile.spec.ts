@@ -48,6 +48,16 @@ const person = {
   fitReason: "You both started in HackSC and share a Computer Science background.",
 };
 
+const alex = {
+  ...person,
+  id: "alex",
+  name: "Alex Kim",
+  role: "student",
+  photo: "avatars/student-alex.jpg",
+  currentRole: "USC Student",
+  company: "University of Southern California",
+};
+
 async function mockProfileApi(page: Page) {
   await page.route("**/api/**", async (route) => {
     const { pathname } = new URL(route.request().url());
@@ -57,6 +67,8 @@ async function mockProfileApi(page: Page) {
       await route.fulfill({ json: { status: "ok" } });
     } else if (pathname === "/api/people/priya") {
       await route.fulfill({ json: person });
+    } else if (pathname === "/api/people/alex") {
+      await route.fulfill({ json: alex });
     } else {
       await route.fulfill({ status: 404, json: { error: `Unexpected request: ${pathname}` } });
     }
@@ -79,6 +91,16 @@ test("shows profile actions, shared details, and a readable career timeline", as
   await expect(page.getByRole("heading", { name: "How Priya got here" })).toBeVisible();
   await expect(page.locator('[data-testid^="timeline-step-"]')).toHaveCount(3);
   await expect(page.getByText("Experience", { exact: true })).toBeVisible();
+});
+
+test("shows a profile photo on Alex's student profile", async ({ page }) => {
+  await mockProfileApi(page);
+  await page.goto("/people/alex");
+
+  await expect(page.getByTestId("text-person-name")).toHaveText("Alex Kim");
+  const avatar = page.locator('img[data-testid="img-avatar"]');
+  await expect(avatar).toHaveAttribute("src", /avatars\/student-alex\.jpg$/);
+  await expect(avatar).toHaveJSProperty("naturalWidth", 512);
 });
 
 test("keeps the profile readable on a phone without horizontal overflow", async ({ page }) => {

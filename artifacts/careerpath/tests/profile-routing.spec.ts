@@ -101,6 +101,15 @@ for (const role of ["student", "alumni"] as const) {
   }
 }
 
+test("features Alex's student portrait without the demo-portrait label on login", async ({ page }) => {
+  await mockRoutingApi(page);
+  await page.goto("/login");
+
+  await expect(page.getByText("AI-generated demo portraits", { exact: true })).toHaveCount(0);
+  await expect(page.getByTestId("img-featured-portrait")).toHaveCount(3);
+  await expect(page.locator('img[src*="student-alex.jpg"]')).toBeVisible();
+});
+
 for (const role of ["student", "alumni"] as const) {
   test(`registration sends new ${role} accounts to profile setup`, async ({ page }) => {
     await mockRoutingApi(page);
