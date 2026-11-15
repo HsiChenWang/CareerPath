@@ -14,7 +14,7 @@ export default function Landing() {
           <Logo />
         </div>
 
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-8 md:px-12 lg:grid-cols-2 lg:gap-16 lg:pb-4 lg:pt-8">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 pb-8 pt-8 md:px-12 lg:grid-cols-2 lg:gap-16 lg:pb-4 lg:pt-8">
           <div className="relative z-10">
             <p className="rise inline-flex items-center gap-2 rounded-full border border-cardinal/15 bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-cardinal">
               <span className="h-2 w-2 rounded-full bg-gold" /> An AI career companion for USC
@@ -48,7 +48,7 @@ export default function Landing() {
       </section>
 
       {/* PAGE TWO */}
-      <section className="bg-paper py-16" data-testid="home-second-page">
+      <section className="bg-paper py-8" data-testid="home-second-page">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
             <div className="relative overflow-hidden rounded-[2rem] bg-ink p-10 text-paper">
@@ -67,10 +67,10 @@ export default function Landing() {
               </ul>
             </div>
           </div>
-          <div className="relative mt-6 overflow-hidden rounded-[2rem] bg-cardinal">
+          <div className="relative mt-5 overflow-hidden rounded-[2rem] bg-cardinal">
             <div className="trail-h absolute left-0 right-0 top-0 h-1" />
-            <div className="px-8 py-12 md:px-12">
-              <h2 className="max-w-3xl font-display text-5xl leading-[0.95] text-white md:text-7xl">
+            <div className="px-6 py-10 md:px-12 md:py-12">
+              <h2 className="mx-auto max-w-5xl text-center font-display text-4xl leading-tight text-white sm:text-5xl md:text-6xl">
                 Somebody already walked your path. <span className="text-gold">Go say hi.</span>
               </h2>
             </div>
