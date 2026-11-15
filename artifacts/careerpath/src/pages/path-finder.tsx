@@ -5,6 +5,7 @@ import { ArrowRight, Map, Search } from "lucide-react";
 import { useFindPath, getGetGapQueryKey, getGetSessionQueryKey } from "@workspace/api-client-react";
 import type { CareerPath } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
+import { CareerWorkflowProgress } from "@/components/career-workflow";
 import { AiThinking, EmptyBlock, ErrorBlock, PageHeader, PersonAvatar, Tag } from "@/components/bits";
 import { useCoach } from "@/components/coach";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,7 @@ export default function PathFinder() {
 
   return (
     <Page>
+      <CareerWorkflowProgress current="Path Finder" />
       <PageHeader eyebrow="Path Finder" title={<>Where do you <span className="text-cardinal">want to end up?</span></>} sub="Name a dream role. We read the year-by-year timelines of Trojans who got there and find the common path." />
 
       <form onSubmit={submit} className="rise mb-12 flex flex-col gap-3 rounded-[1.75rem] border bg-card p-3 shadow-sm md:flex-row md:items-center">

@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { ArrowRight, Compass } from "lucide-react";
 import { useGetPeople } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
+import { CareerWorkflowProgress } from "@/components/career-workflow";
 import { AiThinking, CardSkeletons, EmptyBlock, ErrorBlock, PageHeader, PersonAvatar } from "@/components/bits";
 import { errMsg, useMe } from "@/lib/cp";
 
@@ -12,6 +13,7 @@ export default function Explore() {
   const q = useGetPeople({ kind: "explore" });
   return (
     <Page>
+      <CareerWorkflowProgress current="Explore" />
       <PageHeader
         eyebrow="Explore"
         title={<>Trojans who started <span className="text-cardinal">where you are.</span></>}

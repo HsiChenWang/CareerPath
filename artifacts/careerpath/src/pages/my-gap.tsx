@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Check, Sparkles, Target } from "lucide-react";
 import { useGetGap, useUpdateGapStep, getGetGapQueryKey, getGetNetworkQueryKey } from "@workspace/api-client-react";
 import { Page } from "@/components/shell";
+import { CareerWorkflowProgress } from "@/components/career-workflow";
 import { CardSkeletons, EmptyBlock, ErrorBlock, PageHeader, Tag } from "@/components/bits";
 import { useCoach } from "@/components/coach";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,7 @@ export default function MyGap() {
 
   return (
     <Page>
+      <CareerWorkflowProgress current="My Gap" />
       <PageHeader eyebrow="My Gap" title={<>Where you are, <span className="text-cardinal">against where they were.</span></>} sub={gap?.role ? `Your profile compared to the common path to ${gap.role}${gap.company ? ` at ${gap.company}` : ""}.` : undefined} />
       {q.isLoading ? <CardSkeletons n={3} /> : q.isError ? <ErrorBlock message={errMsg(q.error)} onRetry={() => q.refetch()} /> : !gap || !gap.steps.length ? (
         <EmptyBlock icon={<Target className="h-6 w-6" />} title="Pick a destination first" body="Map a path in Path Finder and we will compare it with your profile, step by step." action={<Link href="/path-finder" className="rounded-full bg-cardinal px-5 py-2.5 text-sm font-semibold text-white" data-testid="link-path-finder">Open Path Finder</Link>} />

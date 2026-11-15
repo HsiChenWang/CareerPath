@@ -1,19 +1,26 @@
 import { useState, type ReactNode } from "react";
 import { Link, Redirect, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, Menu } from "lucide-react";
+import { ChevronDown, LogOut, Menu } from "lucide-react";
 import { useHealthCheck, useLogout } from "@workspace/api-client-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PersonAvatar } from "@/components/bits";
-import { useMe, homeFor, PATH_KEY } from "@/lib/cp";
+import { useMe, homeFor, isProfileComplete, PATH_KEY } from "@/lib/cp";
 import { cn } from "@/lib/utils";
 
 const STUDENT_NAV = [
-  ["/explore", "Explore"], ["/path-finder", "Path Finder"], ["/my-gap", "My Gap"], ["/connect", "Connect"],
-  ["/messages", "Messages"], ["/my-network", "My Network"], ["/profile", "Profile"],
+  ["/connect", "Connect"], ["/my-network", "My Network"],
 ] as const;
-const ALUMNI_NAV = [["/requests", "Requests"], ["/messages", "Messages"], ["/upcoming-chats", "Upcoming Chats"], ["/profile", "Profile"]] as const;
+const ALUMNI_NAV = [["/requests", "Requests"], ["/upcoming-chats", "Upcoming Chats"]] as const;
 
 export function Logo({ light }: { light?: boolean }) {
   return (
@@ -66,14 +73,29 @@ export function AppNav() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <span className="hidden items-center gap-2 rounded-full border bg-card py-1 pl-1 pr-3 md:flex" data-testid="text-current-user">
-            <PersonAvatar person={user} size={28} className="rounded-full" />
-            <span className="text-sm font-medium">{user.name.split(" ")[0]}</span>
-            <span className="rounded-full bg-gold px-1.5 text-[10px] font-semibold uppercase text-ink">{user.role === "alumni" ? "Alum" : "Student"}</span>
-          </span>
-          <button onClick={signOut} className="hidden rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-cardinal lg:block" aria-label="Sign out" data-testid="button-logout">
-            <LogOut className="h-4 w-4" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 rounded-full border bg-card py-1 pl-1 pr-2 transition-colors hover:border-cardinal/30" aria-label="Open account menu" data-testid="button-account-menu">
+                <PersonAvatar person={user} size={28} className="rounded-full" />
+                <span className="hidden text-sm font-medium sm:inline">{user.name.split(" ")[0]}</span>
+                <span className="hidden rounded-full bg-gold px-1.5 text-[10px] font-semibold uppercase text-ink md:inline">{user.role === "alumni" ? "Alum" : "Student"}</span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="font-normal">
+                <span className="block truncate font-semibold text-foreground">{user.name}</span>
+                <span className="text-xs text-muted-foreground">{user.role === "alumni" ? "Alumni" : "Student"}</span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/profile" data-testid="link-profile-menu">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={signOut} data-testid="button-logout">
+                <LogOut className="mr-2 h-4 w-4" /> Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <button onClick={() => setOpen(true)} className="rounded-full p-2 hover:bg-muted lg:hidden" aria-label="Menu" data-testid="button-menu">
             <Menu className="h-5 w-5" />
           </button>
@@ -122,6 +144,7 @@ export function Footer() {
 
 export function Guard({ role, children }: { role?: "student" | "alumni"; children: ReactNode }) {
   const { user, isLoading } = useMe();
+  const [location] = useLocation();
   if (isLoading) {
     return (
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-12 md:px-8">
@@ -132,6 +155,7 @@ export function Guard({ role, children }: { role?: "student" | "alumni"; childre
   }
   if (!user) return <Redirect to="/login" />;
   if (role && user.role !== role) return <Redirect to={homeFor(user)} />;
+  if (!isProfileComplete(user) && location.split("?")[0] !== "/profile") return <Redirect to="/profile?welcome=1" />;
   return <>{children}</>;
 }
 

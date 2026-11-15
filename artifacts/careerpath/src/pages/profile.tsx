@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { errMsg, useMe, LEVELS, SCHOOLS, PATH_KEY } from "@/lib/cp";
+import { errMsg, useMe, isProfileComplete, LEVELS, SCHOOLS, PATH_KEY } from "@/lib/cp";
 import { cn } from "@/lib/utils";
 
 const KEYS: (keyof ProfileInput)[] = ["name", "school", "major", "level", "year", "gradYear", "clubs", "experience", "skills", "courses", "interests", "dreamRole", "dreamCompany", "currentRole", "company", "openToChat", "paused", "helpTopics", "availability", "maxChats", "bio"];
@@ -37,7 +37,7 @@ export default function Profile() {
   const qc = useQueryClient();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const welcome = new URLSearchParams(useSearch()).get("welcome") === "1";
+  const welcome = new URLSearchParams(useSearch()).get("welcome") === "1" || !isProfileComplete(user);
   const [form, setForm] = useState<ProfileInput>({});
   const [filled, setFilled] = useState<Set<string>>(new Set());
   const [resume, setResume] = useState("");
@@ -127,6 +127,11 @@ export default function Profile() {
   };
 
   const submit = (next?: string) => {
+    const draftReady = isProfileComplete({ ...user, ...form });
+    if (welcome && !draftReady) {
+      toast({ title: "A few details are still needed", description: alum ? "Add your USC school, major, and current role to continue." : "Add your USC school, major, level, and year or graduation year to continue." });
+      return;
+    }
     const data: ProfileInput = {};
     for (const k of KEYS) {
       const v = form[k];
@@ -144,7 +149,8 @@ export default function Profile() {
         sessionStorage.removeItem(PATH_KEY);
         setFilled(new Set());
         toast({ title: "Profile saved" });
-        if (next) setLocation(next);
+        const destination = next ?? (welcome ? (alum ? "/requests" : "/explore") : undefined);
+        if (destination) setLocation(destination);
         else tips.mutate({ data: { kind: "tips" } });
       },
       onError: (e) => toast({ title: "Not saved", description: errMsg(e), variant: "destructive" }),
@@ -153,6 +159,7 @@ export default function Profile() {
 
   if (!user) return null;
   const hl = (k: string) => filled.has(k) && "ring-2 ring-gold/70";
+  const draftReady = isProfileComplete({ ...user, ...form });
 
   return (
     <Page>
@@ -280,11 +287,12 @@ export default function Profile() {
 
         <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-[1.75rem] border bg-card p-6">
-            <button onClick={() => submit()} disabled={save.isPending} className="h-12 w-full rounded-full bg-cardinal font-semibold text-white transition-transform active:scale-[.98] disabled:opacity-60" data-testid="button-save-profile">{save.isPending ? "Saving..." : "Save profile"}</button>
-            {!alum && knows === "yes" && (
+            <button onClick={() => submit()} disabled={save.isPending || (welcome && !draftReady)} className="h-12 w-full rounded-full bg-cardinal font-semibold text-white transition-transform active:scale-[.98] disabled:opacity-60" data-testid="button-save-profile">{save.isPending ? "Saving..." : welcome ? "Save and continue" : "Save profile"}</button>
+            {welcome && !draftReady && <p className="mt-3 text-xs leading-relaxed text-muted-foreground" data-testid="text-profile-required">To continue, add your USC school, major{alum ? ", and current role." : ", level, and year or graduation year."}</p>}
+            {!welcome && !alum && knows === "yes" && (
               <button onClick={() => submit(`/path-finder?role=${encodeURIComponent(form.dreamRole ?? "")}&company=${encodeURIComponent(form.dreamCompany ?? "")}`)} disabled={save.isPending || !form.dreamRole?.trim()} className="mt-2 h-12 w-full rounded-full bg-gold font-semibold text-ink disabled:opacity-50" data-testid="button-save-path">Save and map my path</button>
             )}
-            {!alum && knows === "no" && (
+            {!welcome && !alum && knows === "no" && (
               <button onClick={() => submit("/explore")} disabled={save.isPending} className="mt-2 h-12 w-full rounded-full bg-gold font-semibold text-ink disabled:opacity-50" data-testid="button-save-explore">Save and explore careers</button>
             )}
           </div>

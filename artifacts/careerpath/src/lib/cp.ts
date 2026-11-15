@@ -35,7 +35,22 @@ export function useMe() {
 
 export function homeFor(user: Person | null): string {
   if (!user) return "/";
+  if (!isProfileComplete(user)) return "/profile?welcome=1";
   return user.role === "alumni" ? "/requests" : "/explore";
+}
+
+export function isProfileComplete(user: {
+  role?: string | null;
+  school?: string | null;
+  major?: string | null;
+  level?: string | null;
+  year?: string | null;
+  gradYear?: number | null;
+  currentRole?: string | null;
+} | null | undefined): boolean {
+  if (!user || !user.school?.trim() || !user.major?.trim()) return false;
+  if (user.role === "alumni") return !!user.currentRole?.trim();
+  return !!user.level?.trim() && (!!user.year?.trim() || !!user.gradYear);
 }
 
 export function roleLine(p: Person): string {
